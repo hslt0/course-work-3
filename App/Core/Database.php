@@ -44,4 +44,9 @@ class Database
     {
         return $this->handler->query($sql);
     }
+
+    public function prepare(string $sql): PDOStatement
+    {
+        return $this->handler->prepare($sql);
+    }
 }
