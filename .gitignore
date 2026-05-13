@@ -1,0 +1,25 @@
+# IDEs / Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Sensitive Config (if you plan to have a separate local config)
+# App/Config/config.php
+# (Note: Usually you'd track a config.example.php and ignore the actual config.php, but for this project we'll track it for now)
+
+# Vendor folder (if you use Composer later)
+/vendor/
