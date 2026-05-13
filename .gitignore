@@ -23,3 +23,5 @@ Thumbs.db
 
 # Vendor folder (if you use Composer later)
 /vendor/
+
+/public/uploads/

@@ -58,7 +58,7 @@
         <?php else: ?>
             <div class="space-y-4">
                 <?php foreach ($lessons as $index => $lesson): ?>
-                    <div class="bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow duration-200 flex items-center justify-between group cursor-pointer">
+                    <a href="<?= URLROOT ?>/lessons/show/<?= $lesson->id ?>" class="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow duration-200 flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-4">
                             <!-- Icon based on lesson type -->
                             <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-gray-50 group-hover:bg-green-50 transition-colors">
@@ -85,11 +85,11 @@
                         </div>
                         
                         <div>
-                            <button class="bg-gray-100 hover:bg-green-500 text-gray-600 hover:text-white px-4 py-2 rounded-lg font-medium transition-colors border border-transparent hover:border-green-600 text-sm flex items-center">
+                            <span class="bg-gray-100 group-hover:bg-green-500 text-gray-600 group-hover:text-white px-4 py-2 rounded-lg font-medium transition-colors border border-transparent group-hover:border-green-600 text-sm flex items-center">
                                 View Lesson
-                            </button>
+                            </span>
                         </div>
-                    </div>
+                    </a>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
