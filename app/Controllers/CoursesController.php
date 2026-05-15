@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Models\Course;
 use App\Models\Lesson;
+use App\Models\Test;
 
 class CoursesController extends Controller
 {
@@ -14,7 +15,7 @@ class CoursesController extends Controller
 
         $this->view('courses/index', [
             'courses' => $courses,
-            'title' => 'All courses'
+            'title' => 'All Courses'
         ]);
     }
 
@@ -30,10 +31,12 @@ class CoursesController extends Controller
         }
 
         $lessons = Lesson::getForCourse($id);
+        $tests = Test::getForCourse($id);
 
         $this->view('courses/show', [
             'course' => $course,
             'lessons' => $lessons,
+            'tests' => $tests,
             'title' => $course->name
         ]);
     }

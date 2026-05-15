@@ -52,11 +52,11 @@
         </h2>
 
         <?php if (empty($lessons)): ?>
-            <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
+            <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center mb-8">
                 <p class="text-gray-500">No lessons have been added to this course yet.</p>
             </div>
         <?php else: ?>
-            <div class="space-y-4">
+            <div class="space-y-4 mb-8">
                 <?php foreach ($lessons as $index => $lesson): ?>
                     <a href="<?= URLROOT ?>/lessons/show/<?= $lesson->id ?>" class="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow duration-200 flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-4">
@@ -87,6 +87,43 @@
                         <div>
                             <span class="bg-gray-100 group-hover:bg-green-500 text-gray-600 group-hover:text-white px-4 py-2 rounded-lg font-medium transition-colors border border-transparent group-hover:border-green-600 text-sm flex items-center">
                                 View Lesson
+                            </span>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+
+        <!-- Tests Section -->
+        <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center mt-12">
+            <svg class="w-6 h-6 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+            Knowledge Tests
+        </h2>
+
+        <?php if (empty($tests)): ?>
+            <div class="bg-gray-50 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
+                <p class="text-gray-500">No tests available for this course yet.</p>
+            </div>
+        <?php else: ?>
+            <div class="space-y-4">
+                <?php foreach ($tests as $index => $test): ?>
+                    <a href="<?= URLROOT ?>/tests/show/<?= $test->id ?>" class="block bg-white border border-indigo-100 rounded-xl p-5 hover:shadow-md hover:border-indigo-300 transition-all duration-200 flex items-center justify-between group cursor-pointer">
+                        <div class="flex items-center space-x-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-indigo-50 group-hover:bg-indigo-100 transition-colors">
+                                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                    <?= htmlspecialchars($test->title, ENT_QUOTES, 'UTF-8') ?>
+                                </h3>
+                                <p class="text-sm text-gray-500 uppercase tracking-wide mt-1 font-medium">Assessment</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <span class="bg-indigo-50 group-hover:bg-indigo-600 text-indigo-700 group-hover:text-white px-4 py-2 rounded-lg font-medium transition-colors border border-indigo-200 group-hover:border-indigo-600 text-sm flex items-center">
+                                Take Test
                             </span>
                         </div>
                     </a>
