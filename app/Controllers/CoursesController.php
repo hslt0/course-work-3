@@ -11,11 +11,24 @@ class CoursesController extends Controller
 {
     public function index(): void
     {
-        $courses = Course::getAll();
+        $search = $_GET['search'] ?? '';
+        $language = $_GET['language'] ?? '';
+        $difficulty = $_GET['difficulty'] ?? '';
+        $sortBy = $_GET['sort'] ?? '';
+
+        $courses = Course::searchAndFilter($search, $language, $difficulty, $sortBy);
+        $languages = Course::getDistinctLanguages();
 
         $this->view('courses/index', [
             'courses' => $courses,
-            'title' => 'All Courses'
+            'languages' => $languages,
+            'filters' => [
+                'search' => $search,
+                'language' => $language,
+                'difficulty' => $difficulty,
+                'sort' => $sortBy
+            ],
+            'title' => 'Our Courses'
         ]);
     }
 
@@ -24,7 +37,6 @@ class CoursesController extends Controller
         $course = Course::getById($id);
 
         if (!$course) {
-            // A simple 404 handler
             http_response_code(404);
             $this->view('errors/404', ['title' => 'Course Not Found']);
             return;
