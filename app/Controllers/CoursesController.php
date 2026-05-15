@@ -14,7 +14,7 @@ class CoursesController extends Controller
 
         $this->view('courses/index', [
             'courses' => $courses,
-            'title' => 'All Courses'
+            'title' => 'All courses'
         ]);
     }
 

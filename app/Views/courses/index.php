@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Our Courses', ENT_QUOTES, 'UTF-8') ?> | <?= SITENAME ?></title>
+    <title><?= htmlspecialchars($title ?? 'Our courses', ENT_QUOTES, 'UTF-8') ?> | <?= SITENAME ?></title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -30,7 +30,7 @@
         <!-- Header Section -->
         <div class="text-center mb-16">
             <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">
-                <?= htmlspecialchars($title ?? 'Our Courses', ENT_QUOTES, 'UTF-8') ?>
+                <?= htmlspecialchars($title ?? 'Our courses', ENT_QUOTES, 'UTF-8') ?>
             </h1>
             <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-600">
                 Unlock a world of possibilities. Start your journey to fluency today with our expertly crafted language courses.

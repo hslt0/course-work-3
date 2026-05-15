@@ -1,6 +1,6 @@
 <?php
 
-require_once '../App/init.php';
+require_once '../app/init.php';
 
 use App\Core\App;
 

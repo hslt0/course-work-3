@@ -16,7 +16,7 @@ class Course
     public static function getAll(): array
     {
         $db = Database::getInstance();
-        $stmt = $db->query('SELECT * FROM Courses');
+        $stmt = $db->query('SELECT * FROM courses');
         
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }
@@ -24,7 +24,7 @@ class Course
     public static function getById(int $id): ?self
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM Courses WHERE id = :id');
+        $stmt = $db->prepare('SELECT * FROM courses WHERE id = :id');
         $stmt->execute(['id' => $id]);
         
         $course = $stmt->fetchObject(self::class);
