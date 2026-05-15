@@ -8,21 +8,11 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-800 antialiased">
 
-    <!-- Navigation -->
-    <nav class="bg-gray-900 shadow-lg border-b border-green-500">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
-                <a href="<?= URLROOT ?>" class="flex items-center">
-                    <svg class="w-8 h-8 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
-                    <span class="font-bold text-white text-xl tracking-wide"><?= SITENAME ?></span>
-                </a>
-                <a href="<?= URLROOT ?>/courses/show/<?= $course->id ?>" class="text-gray-300 hover:text-white flex items-center transition-colors">
-                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Back to Curriculum
-                </a>
-            </div>
-        </div>
-    </nav>
+    <?php 
+        $backUrl = URLROOT . '/courses/show/' . $course->id;
+        $backText = 'Back to Curriculum';
+        require APPROOT . '/Views/partials/navbar.php'; 
+    ?>
 
     <div class="max-w-4xl mx-auto px-4 mt-12 mb-16">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
