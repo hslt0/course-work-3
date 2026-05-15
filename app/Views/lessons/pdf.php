@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var string $title
+ * @var App\Models\Course $course
+ * @var App\Models\Lesson $lesson
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,7 +36,7 @@
             
             <div class="w-full" style="height: 80vh;">
                 <!-- Embedding PDF using an iframe. This relies on the browser's PDF viewing capabilities. -->
-                <iframe src="<?= htmlspecialchars($lesson->content_path, ENT_QUOTES, 'UTF-8') ?>" class="w-full h-full" frameborder="0"></iframe>
+                <iframe src="<?= htmlspecialchars($lesson->content_path, ENT_QUOTES, 'UTF-8') ?>" class="w-full h-full border-0"></iframe>
             </div>
         </div>
     </div>

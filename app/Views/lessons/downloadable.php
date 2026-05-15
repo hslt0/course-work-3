@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var string $title
+ * @var App\Models\Course $course
+ * @var App\Models\Lesson $lesson
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

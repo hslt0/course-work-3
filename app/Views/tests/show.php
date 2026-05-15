@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var string $title
+ * @var App\Models\Course $course
+ * @var App\Models\Test $test
+ * @var array $questionsWithAnswers
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

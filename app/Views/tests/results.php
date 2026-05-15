@@ -1,3 +1,13 @@
+<?php
+/**
+ * @var string $title
+ * @var App\Models\Course $course
+ * @var App\Models\Test $test
+ * @var int $score
+ * @var int $total
+ * @var array $results
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,7 +32,7 @@
                 <p class="text-gray-500"><?= htmlspecialchars($test->title, ENT_QUOTES, 'UTF-8') ?></p>
                 
                 <?php 
-                    $percentage = ($total > 0) ? round(($score / $total) * 100) : 0;
+                    $percentage = ($total > 0) ? (int)round(($score / $total) * 100) : 0;
                     $colorClass = $percentage >= 70 ? 'text-green-500' : ($percentage >= 50 ? 'text-yellow-500' : 'text-red-500');
                 ?>
                 <div class="mt-6">
@@ -51,12 +61,12 @@
                             <?php foreach ($result['answers'] as $answer): ?>
                                 <?php 
                                     $isUserAnswer = ($result['submitted_answer_id'] === $answer->id);
-                                    $isCorrectAnswer = ($answer->is_correct);
+                                    $isCorrectAnswer = (bool)($answer->is_correct);
                                     
                                     $itemClass = "p-3 rounded-lg border ";
                                     if ($isCorrectAnswer) {
                                         $itemClass .= "bg-green-100 border-green-500 text-green-800 font-medium";
-                                    } elseif ($isUserAnswer && !$isCorrectAnswer) {
+                                    } elseif ($isUserAnswer) {
                                         $itemClass .= "bg-red-100 border-red-500 text-red-800 font-medium";
                                     } else {
                                         $itemClass .= "bg-white border-gray-200 text-gray-600 opacity-60";

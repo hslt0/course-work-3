@@ -1,3 +1,10 @@
+<?php
+/**
+ * @var string $title
+ * @var App\Models\Course $course
+ * @var App\Models\Lesson $lesson
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -37,7 +44,10 @@
     </div>
 
     <script>
-        // Use a relative path from the root URL to fetch the markdown file
+        /** @type {any} */
+        const marked = window.marked;
+
+        // Use a relative path from the root URL to fetch the Markdown file
         const contentPath = '<?= URLROOT ?>' + '<?= htmlspecialchars($lesson->content_path, ENT_QUOTES, 'UTF-8') ?>';
         
         fetch(contentPath)

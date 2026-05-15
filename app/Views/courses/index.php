@@ -1,3 +1,9 @@
+<?php
+/**
+ * @var string $title
+ * @var App\Models\Course[] $courses
+ */
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
