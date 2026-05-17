@@ -26,3 +26,7 @@ Thumbs.db
 # User Uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# Storage
+/storage/*
+!/storage/logs/.gitkeep

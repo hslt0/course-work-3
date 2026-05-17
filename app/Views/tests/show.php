@@ -31,6 +31,7 @@
             </div>
             
             <form action="<?= URLROOT ?>/tests/submit/<?= $test->id ?>" method="POST" class="p-8">
+                <?= App\Core\CSRF::getField() ?>
                 
                 <?php foreach ($questionsWithAnswers as $index => $item): ?>
                     <div class="mb-8 border-b border-gray-100 pb-8">

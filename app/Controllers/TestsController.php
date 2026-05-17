@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\CSRF;
+use App\Core\RateLimiter;
 use App\Models\Test;
 use App\Models\Question;
 use App\Models\Answer;
@@ -62,6 +64,17 @@ class TestsController extends Controller
             exit;
         }
 
+        $userId = $_SESSION['user_id'] ?? null;
+        $actionKey = 'submit_test_' . ($userId ?? 'guest');
+
+        // Enforce Rate Limiting before anything else
+        if (RateLimiter::check($actionKey, 10, 3600)) {
+            http_response_code(429);
+            die('Too many submissions. Please wait a while before trying again.');
+        }
+
+        CSRF::enforce();
+
         $test = Test::getById($id);
         if (!$test) {
             http_response_code(404);
@@ -69,13 +82,14 @@ class TestsController extends Controller
             return;
         }
 
-        $userId = $_SESSION['user_id'] ?? null;
-
         // Security check: Must be enrolled to submit
         if (!$userId || !Enrollment::isEnrolled($userId, $test->course_id)) {
             header('Location: ' . URLROOT . '/courses/show/' . $test->course_id);
             exit;
         }
+
+        // Record the attempt *before* processing
+        RateLimiter::attempt($actionKey, 10, 3600);
 
         $course = Course::getById($test->course_id);
         $questions = Question::getForTest($id);

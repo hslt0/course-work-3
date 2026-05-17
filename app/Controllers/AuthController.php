@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\CSRF;
+use App\Core\RateLimiter;
 use App\Models\User;
 
 class AuthController extends Controller
@@ -25,6 +26,13 @@ class AuthController extends Controller
         ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Enforce Rate Limiting before anything else
+            if (RateLimiter::check('login_attempt')) {
+                $data['email_err'] = 'Too many login attempts. Please wait 15 minutes and try again.';
+                $this->view('auth/login', $data);
+                return;
+            }
+
             CSRF::enforce();
             
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
@@ -57,6 +65,8 @@ class AuthController extends Controller
                     }
                     exit;
                 } else {
+                    // This is a failed attempt, so we record it.
+                    RateLimiter::attempt('login_attempt');
                     $data['password_err'] = 'Password incorrect or email not found';
                 }
             }
