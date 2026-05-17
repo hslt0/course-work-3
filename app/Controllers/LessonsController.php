@@ -7,6 +7,7 @@ use App\Models\Lesson;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Progress;
+use App\Models\Comment;
 
 class LessonsController extends Controller
 {
@@ -33,6 +34,9 @@ class LessonsController extends Controller
         // Fetch prev and next lessons for navigation
         $prevLesson = Lesson::getPreviousLesson($lesson->course_id, $lesson->order_index);
         $nextLesson = Lesson::getNextLesson($lesson->course_id, $lesson->order_index);
+        
+        // Fetch comments for the discussion section
+        $comments = Comment::getForLesson($id);
 
         $data = [
             'lesson' => $lesson,
@@ -40,6 +44,7 @@ class LessonsController extends Controller
             'isCompleted' => $isCompleted,
             'prevLesson' => $prevLesson,
             'nextLesson' => $nextLesson,
+            'comments' => $comments,
             'title' => $lesson->title
         ];
 
@@ -78,6 +83,31 @@ class LessonsController extends Controller
         }
         
         header('Location: ' . URLROOT);
+        exit;
+    }
+
+    public function comment(int $id): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . URLROOT . '/auth/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $commentText = trim($_POST['comment'] ?? '');
+            
+            if (!empty($commentText)) {
+                $lesson = Lesson::getById($id);
+                // Ensure they are enrolled before allowing comments
+                if ($lesson && Enrollment::isEnrolled($_SESSION['user_id'], $lesson->course_id)) {
+                    Comment::create($_SESSION['user_id'], $id, $commentText);
+                }
+            }
+        }
+        
+        header('Location: ' . URLROOT . '/lessons/show/' . $id . '#discussion');
         exit;
     }
 }

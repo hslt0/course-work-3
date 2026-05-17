@@ -38,6 +38,7 @@
             </div>
             
             <form class="mt-8 space-y-6" action="<?= URLROOT ?>/auth/register" method="POST">
+                <?= App\Core\CSRF::getField() ?>
                 <div class="space-y-4">
                     
                     <div>

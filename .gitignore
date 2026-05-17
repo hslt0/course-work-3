@@ -17,9 +17,8 @@
 ehthumbs.db
 Thumbs.db
 
-# Sensitive Config (if you plan to have a separate local config)
-# app/Config/config.php
-# (Note: Usually you'd track a config.example.php and ignore the actual config.php, but for this project we'll track it for now)
+# Environment Variables (Crucial for Security)
+.env
 
 # Vendor folder (if you use Composer later)
 /vendor/

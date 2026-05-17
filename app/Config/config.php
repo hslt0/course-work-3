@@ -1,14 +1,20 @@
 <?php
 
-// Database Configuration
-const DB_HOST = '127.0.0.1';
-const DB_USER = 'root';
-const DB_PASS = '';
-const DB_NAME = 'coursework3';
+// Load .env variables if available
+require_once dirname(__FILE__, 2) . '/Core/DotEnv.php';
+\App\Core\DotEnv::load(dirname(__FILE__, 3) . '/.env');
+
+// Database Configuration (Fallback to old defaults if env is missing)
+define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'coursework3');
 
 // App Root
 define('APPROOT', dirname(__FILE__, 2));
+
 // URL Root (No trailing slash to prevent double slashes in views)
-const URLROOT = 'http://course-work';
+define('URLROOT', $_ENV['URLROOT'] ?? 'http://course-work');
+
 // Site Name
-const SITENAME = 'LanguageCourses';
+define('SITENAME', $_ENV['SITENAME'] ?? 'LanguageCourses');

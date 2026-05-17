@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\CSRF;
 use App\Models\User;
 
 class AuthController extends Controller
@@ -24,6 +25,8 @@ class AuthController extends Controller
         ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            CSRF::enforce();
+            
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
             $data['email'] = trim($_POST['email']);
@@ -83,6 +86,8 @@ class AuthController extends Controller
         ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            CSRF::enforce();
+
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
             $data['name'] = trim($_POST['name']);
