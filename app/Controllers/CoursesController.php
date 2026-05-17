@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Test;
 use App\Models\Enrollment;
+use App\Models\Review;
 
 class CoursesController extends Controller
 {
@@ -54,17 +55,24 @@ class CoursesController extends Controller
 
         $lessons = Lesson::getForCourse($id);
         $tests = Test::getForCourse($id);
+        $reviews = Review::getForCourse($id);
+        $averageRating = Review::getAverageRatingForCourse($id);
 
         $isEnrolled = false;
+        $hasReviewed = false;
         if (isset($_SESSION['user_id'])) {
             $isEnrolled = Enrollment::isEnrolled($_SESSION['user_id'], $id);
+            $hasReviewed = Review::hasUserReviewed($_SESSION['user_id'], $id);
         }
 
         $this->view('courses/show', [
             'course' => $course,
             'lessons' => $lessons,
             'tests' => $tests,
+            'reviews' => $reviews,
+            'averageRating' => $averageRating,
             'isEnrolled' => $isEnrolled,
+            'hasReviewed' => $hasReviewed,
             'title' => $course->name
         ]);
     }
@@ -101,6 +109,32 @@ class CoursesController extends Controller
 
         // Redirect back to the course or to their dashboard
         header('Location: ' . URLROOT . '/courses/show/' . $id);
+        exit;
+    }
+
+    public function review(int $id): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . URLROOT . '/auth/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $rating = (int)($_POST['rating'] ?? 0);
+            $comment = trim($_POST['comment'] ?? '');
+
+            // Basic validation
+            if ($rating >= 1 && $rating <= 5) {
+                // Must be enrolled to review, and can only review once
+                if (Enrollment::isEnrolled($_SESSION['user_id'], $id) && !Review::hasUserReviewed($_SESSION['user_id'], $id)) {
+                    Review::create($_SESSION['user_id'], $id, $rating, empty($comment) ? null : $comment);
+                }
+            }
+        }
+
+        header('Location: ' . URLROOT . '/courses/show/' . $id . '#reviews');
         exit;
     }
 }

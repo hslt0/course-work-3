@@ -30,10 +30,16 @@ class LessonsController extends Controller
         $course = Course::getById($lesson->course_id);
         $isCompleted = Progress::isLessonCompleted($_SESSION['user_id'], $id);
 
+        // Fetch prev and next lessons for navigation
+        $prevLesson = Lesson::getPreviousLesson($lesson->course_id, $lesson->order_index);
+        $nextLesson = Lesson::getNextLesson($lesson->course_id, $lesson->order_index);
+
         $data = [
             'lesson' => $lesson,
             'course' => $course,
             'isCompleted' => $isCompleted,
+            'prevLesson' => $prevLesson,
+            'nextLesson' => $nextLesson,
             'title' => $lesson->title
         ];
 
@@ -61,8 +67,13 @@ class LessonsController extends Controller
                 Progress::markLessonComplete($_SESSION['user_id'], $id);
             }
             
-            // Redirect back to course page after marking complete
-            header('Location: ' . URLROOT . '/courses/show/' . $lesson->course_id);
+            // Redirect to next lesson if it exists, otherwise back to course
+            $nextLesson = Lesson::getNextLesson($lesson->course_id, $lesson->order_index);
+            if ($nextLesson) {
+                header('Location: ' . URLROOT . '/lessons/show/' . $nextLesson->id);
+            } else {
+                header('Location: ' . URLROOT . '/courses/show/' . $lesson->course_id);
+            }
             exit;
         }
         

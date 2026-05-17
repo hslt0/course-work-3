@@ -4,7 +4,10 @@
  * @var App\Models\Course $course
  * @var App\Models\Lesson[] $lessons
  * @var App\Models\Test[] $tests
+ * @var App\Models\Review[] $reviews
+ * @var float $averageRating
  * @var bool $isEnrolled
+ * @var bool $hasReviewed
  */
 ?>
 <!DOCTYPE html>
@@ -33,10 +36,16 @@
                 <div class="h-64 w-full bg-gray-200 relative">
                     <img src="<?= htmlspecialchars($course->preview_image, ENT_QUOTES, 'UTF-8') ?>" alt="Course Image" class="w-full h-full object-cover">
                     <div class="absolute inset-0 bg-gradient-to-t from-gray-900 to-transparent opacity-60"></div>
-                    <div class="absolute bottom-6 left-8">
+                    <div class="absolute bottom-6 left-8 flex items-center gap-3">
                         <span class="bg-green-500 text-white text-sm font-bold px-4 py-1.5 rounded-full shadow-sm">
                             <?= htmlspecialchars($course->language, ENT_QUOTES, 'UTF-8') ?>
                         </span>
+                        <?php if ($averageRating > 0): ?>
+                            <span class="bg-yellow-400 text-yellow-900 text-sm font-bold px-3 py-1.5 rounded-full shadow-sm flex items-center">
+                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                <?= number_format($averageRating, 1) ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endif; ?>
@@ -189,6 +198,64 @@
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+
+        <!-- Reviews Section -->
+        <div id="reviews" class="mt-16 pt-8 border-t border-gray-200">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                Student Reviews
+            </h2>
+
+            <?php if ($isEnrolled && !$hasReviewed): ?>
+                <div class="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Leave a Review</h3>
+                    <p class="text-sm text-gray-600 mb-4">Share your experience with this course to help other students.</p>
+                    <form action="<?= URLROOT ?>/courses/review/<?= $course->id ?>" method="POST">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Rating</label>
+                            <div class="flex items-center space-x-1">
+                                <?php for($i=1; $i<=5; $i++): ?>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="rating" value="<?= $i ?>" required class="sr-only peer">
+                                        <svg class="w-8 h-8 text-gray-300 peer-checked:text-yellow-400 hover:text-yellow-300 transition-colors" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                    </label>
+                                <?php endfor; ?>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="comment" class="block text-sm font-medium text-gray-700 mb-1">Comment (Optional)</label>
+                            <textarea name="comment" id="comment" rows="3" class="block w-full border-gray-300 rounded-xl focus:ring-green-500 focus:border-green-500 sm:text-sm px-3 py-2 border" placeholder="What did you like about this course?"></textarea>
+                        </div>
+                        <button type="submit" class="bg-gray-900 hover:bg-gray-800 text-white font-bold py-2 px-6 rounded-lg transition-colors text-sm shadow-sm">
+                            Submit Review
+                        </button>
+                    </form>
+                </div>
+            <?php endif; ?>
+
+            <?php if (empty($reviews)): ?>
+                <p class="text-gray-500 italic">This course doesn't have any reviews yet.</p>
+            <?php else: ?>
+                <div class="space-y-6">
+                    <?php foreach ($reviews as $review): ?>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="font-bold text-gray-900"><?= htmlspecialchars($review->user_name, ENT_QUOTES, 'UTF-8') ?></span>
+                                <span class="text-xs text-gray-400"><?= date('M j, Y', strtotime($review->created_at)) ?></span>
+                            </div>
+                            <div class="flex items-center mb-3">
+                                <?php for($i=1; $i<=5; $i++): ?>
+                                    <svg class="w-4 h-4 <?= $i <= $review->rating ? 'text-yellow-400' : 'text-gray-300' ?>" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                <?php endfor; ?>
+                            </div>
+                            <?php if (!empty($review->comment)): ?>
+                                <p class="text-gray-600 text-sm italic">"<?= nl2br(htmlspecialchars($review->comment, ENT_QUOTES, 'UTF-8')) ?>"</p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
     </div>
 </body>

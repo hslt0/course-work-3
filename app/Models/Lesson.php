@@ -9,17 +9,18 @@ class Lesson
 {
     public int $id;
     public int $course_id;
+    public int $order_index;
     public string $title;
     public string $type; // 'pdf', 'video', 'pptx', 'markdown'
     public string $content_path;
 
     /**
-     * Fetches all lessons for a given course ID.
+     * Fetches all lessons for a given course ID, ordered by their order_index.
      */
     public static function getForCourse(int $courseId): array
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id ORDER BY id ASC');
+        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id ORDER BY order_index ASC, id ASC');
         $stmt->execute(['course_id' => $courseId]);
         
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
@@ -38,12 +39,44 @@ class Lesson
         return $lesson ?: null;
     }
 
+    /**
+     * Gets the previous lesson in the course, if one exists.
+     */
+    public static function getPreviousLesson(int $courseId, int $currentOrderIndex): ?self
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id AND order_index < :order_index ORDER BY order_index DESC LIMIT 1');
+        $stmt->execute(['course_id' => $courseId, 'order_index' => $currentOrderIndex]);
+        $lesson = $stmt->fetchObject(self::class);
+        return $lesson ?: null;
+    }
+
+    /**
+     * Gets the next lesson in the course, if one exists.
+     */
+    public static function getNextLesson(int $courseId, int $currentOrderIndex): ?self
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id AND order_index > :order_index ORDER BY order_index ASC LIMIT 1');
+        $stmt->execute(['course_id' => $courseId, 'order_index' => $currentOrderIndex]);
+        $lesson = $stmt->fetchObject(self::class);
+        return $lesson ?: null;
+    }
+
     public static function create(int $courseId, string $title, string $type, string $contentPath): bool
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('INSERT INTO lessons (course_id, title, type, content_path) VALUES (:course_id, :title, :type, :content_path)');
+        
+        // Find the highest current order_index to append this to the end
+        $orderStmt = $db->prepare('SELECT MAX(order_index) FROM lessons WHERE course_id = :course_id');
+        $orderStmt->execute(['course_id' => $courseId]);
+        $maxOrder = (int)$orderStmt->fetchColumn();
+        $newOrder = $maxOrder + 1;
+
+        $stmt = $db->prepare('INSERT INTO lessons (course_id, order_index, title, type, content_path) VALUES (:course_id, :order_index, :title, :type, :content_path)');
         return $stmt->execute([
             'course_id' => $courseId,
+            'order_index' => $newOrder,
             'title' => $title,
             'type' => $type,
             'content_path' => $contentPath
