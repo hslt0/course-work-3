@@ -44,7 +44,14 @@ class AuthController extends Controller
                     // Create session
                     $_SESSION['user_id'] = $user->id;
                     $_SESSION['user_name'] = $user->name;
-                    header('Location: ' . URLROOT);
+                    $_SESSION['user_role'] = $user->role; // Store role in session
+                    
+                    // Redirect admin to dashboard, student to home
+                    if ($user->isAdmin()) {
+                        header('Location: ' . URLROOT . '/admin/dashboard');
+                    } else {
+                        header('Location: ' . URLROOT);
+                    }
                     exit;
                 } else {
                     $data['password_err'] = 'Password incorrect or email not found';
@@ -130,6 +137,7 @@ class AuthController extends Controller
     {
         unset($_SESSION['user_id']);
         unset($_SESSION['user_name']);
+        unset($_SESSION['user_role']);
         session_destroy();
         header('Location: ' . URLROOT);
         exit;

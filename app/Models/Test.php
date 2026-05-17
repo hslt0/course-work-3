@@ -34,4 +34,21 @@ class Test
         $test = $stmt->fetchObject(self::class);
         return $test ?: null;
     }
+
+    public static function create(int $courseId, string $title): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('INSERT INTO tests (course_id, title) VALUES (:course_id, :title)');
+        return $stmt->execute([
+            'course_id' => $courseId,
+            'title' => $title
+        ]);
+    }
+
+    public static function delete(int $id): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('DELETE FROM tests WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
 }

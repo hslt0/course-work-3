@@ -37,4 +37,35 @@ class Lesson
         $lesson = $stmt->fetchObject(self::class);
         return $lesson ?: null;
     }
+
+    public static function create(int $courseId, string $title, string $type, string $contentPath): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('INSERT INTO lessons (course_id, title, type, content_path) VALUES (:course_id, :title, :type, :content_path)');
+        return $stmt->execute([
+            'course_id' => $courseId,
+            'title' => $title,
+            'type' => $type,
+            'content_path' => $contentPath
+        ]);
+    }
+
+    public static function update(int $id, string $title, string $type, string $contentPath): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('UPDATE lessons SET title = :title, type = :type, content_path = :content_path WHERE id = :id');
+        return $stmt->execute([
+            'id' => $id,
+            'title' => $title,
+            'type' => $type,
+            'content_path' => $contentPath
+        ]);
+    }
+
+    public static function delete(int $id): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('DELETE FROM lessons WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
 }

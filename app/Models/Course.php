@@ -173,4 +173,38 @@ class Course
         $stmt = $db->query('SELECT DISTINCT language FROM courses ORDER BY language');
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
+
+    public static function create(string $name, string $language, string $difficulty, string $description, ?string $previewImage): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('INSERT INTO courses (name, language, difficulty_level, description, preview_image) VALUES (:name, :language, :difficulty, :description, :preview)');
+        return $stmt->execute([
+            'name' => $name,
+            'language' => $language,
+            'difficulty' => $difficulty,
+            'description' => $description,
+            'preview' => $previewImage
+        ]);
+    }
+
+    public static function update(int $id, string $name, string $language, string $difficulty, string $description, ?string $previewImage): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('UPDATE courses SET name = :name, language = :language, difficulty_level = :difficulty, description = :description, preview_image = :preview WHERE id = :id');
+        return $stmt->execute([
+            'id' => $id,
+            'name' => $name,
+            'language' => $language,
+            'difficulty' => $difficulty,
+            'description' => $description,
+            'preview' => $previewImage
+        ]);
+    }
+
+    public static function delete(int $id): bool
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('DELETE FROM courses WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
 }

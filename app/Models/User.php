@@ -11,6 +11,7 @@ class User
     public string $name;
     public string $email;
     public string $password;
+    public string $role = 'student';
     public ?string $created_at = null; // Can be null before saving to DB
 
     public static function findByEmail(string $email): ?self
@@ -58,5 +59,10 @@ class User
             return $user;
         }
         return null;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
     }
 }

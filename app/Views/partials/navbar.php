@@ -18,8 +18,11 @@
 
             <div class="flex items-center space-x-4">
                 <?php if (isset($_SESSION['user_id'])): ?>
+                    <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                        <a href="<?= URLROOT ?>/admin/dashboard" class="text-green-400 hover:text-white transition-colors text-sm font-bold mr-2 uppercase tracking-wide border border-green-500 rounded px-2 py-1">Admin Panel</a>
+                    <?php endif; ?>
                     <a href="<?= URLROOT ?>/user/dashboard" class="text-gray-300 hover:text-white transition-colors text-sm font-medium mr-4">My Dashboard</a>
-                    <span class="text-gray-300 text-sm border-l border-gray-700 pl-4">Hello, <span class="font-semibold text-white"><?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span></span>
+                    <span class="text-gray-300 text-sm border-l border-gray-700 pl-4 hidden md:inline">Hello, <span class="font-semibold text-white"><?= htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') ?></span></span>
                     <a href="<?= URLROOT ?>/auth/logout" class="text-sm font-medium text-red-400 hover:text-red-300 transition-colors ml-4">Logout</a>
                 <?php else: ?>
                     <a href="<?= URLROOT ?>/auth/login" class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Log in</a>
