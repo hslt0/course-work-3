@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Paginator;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Test;
@@ -17,6 +18,8 @@ class CoursesController extends Controller
         $language = $_GET['language'] ?? '';
         $difficulty = $_GET['difficulty'] ?? '';
         $sortBy = $_GET['sort'] ?? '';
+        $page = (int)($_GET['page'] ?? 1);
+        $itemsPerPage = 6;
         
         // Only consider the enrollment filter if the user is logged in
         $enrolledFilter = '';
@@ -26,11 +29,30 @@ class CoursesController extends Controller
         
         $userId = $_SESSION['user_id'] ?? null;
 
-        $courses = Course::searchAndFilter($search, $language, $difficulty, $sortBy, $enrolledFilter, $userId);
+        // Calculate offset (rough estimate before initialization, Paginator handles bounds)
+        $offset = max(0, ($page - 1) * $itemsPerPage);
+
+        $result = Course::searchAndFilterPaginated(
+            $search, 
+            $language, 
+            $difficulty, 
+            $sortBy, 
+            $enrolledFilter, 
+            $userId, 
+            $itemsPerPage, 
+            $offset
+        );
+
+        $courses = $result['data'];
+        $totalItems = $result['total'];
+
+        $paginator = new Paginator($totalItems, $itemsPerPage, $page);
+        
         $languages = Course::getDistinctLanguages();
 
         $this->view('courses/index', [
             'courses' => $courses,
+            'paginator' => $paginator,
             'languages' => $languages,
             'filters' => [
                 'search' => $search,

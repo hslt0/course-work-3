@@ -2,6 +2,7 @@
 /**
  * @var string $title
  * @var App\Models\Course[] $courses
+ * @var App\Core\Paginator $paginator
  * @var array $languages
  * @var array $filters
  */
@@ -146,7 +147,7 @@
                         <a href="<?= URLROOT ?>" class="mt-6 inline-block bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 hover:text-gray-900 font-bold py-2 px-6 rounded-lg transition-colors">Clear all filters</a>
                     </div>
                 <?php else: ?>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                         <?php foreach ($courses as $course): ?>
                             
                             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
@@ -200,6 +201,11 @@
                             </div>
 
                         <?php endforeach; ?>
+                    </div>
+                    
+                    <!-- Pagination Links -->
+                    <div class="mt-4 border-t border-gray-200 pt-6">
+                        <?= $paginator->getLinks(URLROOT, $filters) ?>
                     </div>
                 <?php endif; ?>
             </div>

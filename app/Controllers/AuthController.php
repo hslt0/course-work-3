@@ -9,6 +9,12 @@ use App\Models\User;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        // Call parent constructor to ensure global rate limit is applied
+        parent::__construct();
+    }
+
     public function login(): void
     {
         // If already logged in, redirect to home
@@ -26,8 +32,8 @@ class AuthController extends Controller
         ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Enforce Rate Limiting before anything else
-            if (RateLimiter::check('login_attempt')) {
+            // Enforce Specific Login Rate Limiting (5 attempts per 15 minutes)
+            if (RateLimiter::check('login_attempt', 5, 900)) {
                 $data['email_err'] = 'Too many login attempts. Please wait 15 minutes and try again.';
                 $this->view('auth/login', $data);
                 return;
@@ -66,7 +72,7 @@ class AuthController extends Controller
                     exit;
                 } else {
                     // This is a failed attempt, so we record it.
-                    RateLimiter::attempt('login_attempt');
+                    RateLimiter::attempt('login_attempt', 5, 900);
                     $data['password_err'] = 'Password incorrect or email not found';
                 }
             }

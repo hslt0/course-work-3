@@ -51,11 +51,19 @@ class Course
     }
 
     /**
-     * Search and filter courses.
+     * Search and filter courses with pagination support.
      * Uses PHP Levenshtein distance to score and sort all results based on closeness to the search query.
      */
-    public static function searchAndFilter(?string $search, ?string $language, ?string $difficulty, ?string $sortBy, ?string $enrolledFilter = null, ?int $userId = null): array
-    {
+    public static function searchAndFilterPaginated(
+        ?string $search, 
+        ?string $language, 
+        ?string $difficulty, 
+        ?string $sortBy, 
+        ?string $enrolledFilter = null, 
+        ?int $userId = null,
+        int $limit = 6,
+        int $offset = 0
+    ): array {
         $db = Database::getInstance();
         
         $query = 'SELECT c.* FROM courses c ';
@@ -71,7 +79,6 @@ class Course
             $query .= ' WHERE 1=1 ';
         }
 
-        // Apply dropdown filters directly in SQL
         if (!empty($language)) {
             $query .= ' AND c.language = :language';
             $params['language'] = $language;
@@ -82,86 +89,87 @@ class Course
             $params['difficulty'] = $difficulty;
         }
 
-        // Validate sort by to prevent SQL injection
-        $allowedSorts = [
-            'language_asc' => 'c.language ASC',
-            'language_desc' => 'c.language DESC',
-            'difficulty_asc' => 'FIELD(c.difficulty_level, "Beginner", "Intermediate", "Advanced") ASC',
-            'difficulty_desc' => 'FIELD(c.difficulty_level, "Beginner", "Intermediate", "Advanced") DESC',
-            'name_asc' => 'c.name ASC',
-        ];
-
-        // Only apply SQL sorting if they selected a specific dropdown sort
-        if (!empty($sortBy) && array_key_exists($sortBy, $allowedSorts)) {
-            $query .= ' ORDER BY ' . $allowedSorts[$sortBy];
-        } else {
-            $query .= ' ORDER BY c.id DESC'; // Default sorting
-        }
-
+        // We fetch all matching courses first to do the PHP-side search/sorting
+        // because we can't LIMIT in SQL *before* doing PHP-side sorting.
         $stmt = $db->prepare($query);
         $stmt->execute($params);
         $allCourses = $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
 
-        // If no search term, return the SQL-filtered list
-        if (empty($search)) {
-            return $allCourses;
-        }
-
-        // ---------------------------------------------------------
-        // Perform PHP-based fuzzy search scoring
-        // ---------------------------------------------------------
-        $searchLower = strtolower(trim($search));
-        $searchWords = array_filter(explode(' ', $searchLower));
-
-        foreach ($allCourses as $course) {
-            $nameLower = strtolower($course->name);
-            $langLower = strtolower($course->language);
+        // Apply PHP-side search filtering and sorting if search term exists
+        if (!empty($search)) {
+            $searchLower = strtolower(trim($search));
+            $searchWords = array_filter(explode(' ', $searchLower));
             
-            $bestScore = 1000; // High number represents a bad match (distance)
-
-            // 1. Exact or partial match gets a perfect score (0)
-            if (str_contains($nameLower, $searchLower) || str_contains($langLower, $searchLower)) {
-                $bestScore = 0;
-            } else {
-                $courseWords = array_merge(explode(' ', $nameLower), [$langLower]);
+            // Score the courses
+            foreach ($allCourses as $course) {
+                $nameLower = strtolower($course->name);
+                $langLower = strtolower($course->language);
                 
-                foreach ($searchWords as $sWord) {
-                    $sLen = strlen($sWord);
+                $bestScore = 1000;
+
+                if (str_contains($nameLower, $searchLower) || str_contains($langLower, $searchLower)) {
+                    $bestScore = 0;
+                } else {
+                    $courseWords = array_merge(explode(' ', $nameLower), [$langLower]);
                     
-                    foreach ($courseWords as $cWord) {
-                        $cLen = strlen($cWord);
-                        
-                        if ($sWord === $cWord) {
-                            $bestScore = min($bestScore, 0);
-                        } else {
-                            // Calculate full word distance
-                            $fullDist = levenshtein($sWord, $cWord);
-                            $bestScore = min($bestScore, $fullDist * 2); // Penalty for full-word typos
-                            
-                            // Calculate prefix distance for partial typing (e.g. "Ing" matching "English")
-                            if ($cLen >= $sLen && $sLen > 0) {
-                                $prefix = substr($cWord, 0, $sLen);
-                                $prefixDist = levenshtein($sWord, $prefix);
+                    foreach ($searchWords as $sWord) {
+                        $sLen = strlen($sWord);
+                        foreach ($courseWords as $cWord) {
+                            $cLen = strlen($cWord);
+                            if ($sWord === $cWord) {
+                                $bestScore = min($bestScore, 0);
+                            } else {
+                                $fullDist = levenshtein($sWord, $cWord);
+                                $bestScore = min($bestScore, $fullDist * 2); 
                                 
-                                // Score = (typos in prefix * 3) + penalty for the remaining untyped letters
-                                $score = ($prefixDist * 3) + ($cLen - $sLen);
-                                $bestScore = min($bestScore, $score);
+                                if ($cLen >= $sLen && $sLen > 0) {
+                                    $prefix = substr($cWord, 0, $sLen);
+                                    $prefixDist = levenshtein($sWord, $prefix);
+                                    $score = ($prefixDist * 3) + ($cLen - $sLen);
+                                    $bestScore = min($bestScore, $score);
+                                }
                             }
                         }
                     }
                 }
+                $course->search_score = $bestScore;
             }
-            
-            $course->search_score = $bestScore;
+
+            // Sort by search score
+            usort($allCourses, function ($a, $b) {
+                return $a->search_score <=> $b->search_score;
+            });
+        } else {
+            // Apply normal SQL-style sorting in PHP since we fetched all
+            $allowedSorts = [
+                'language_asc' => function($a, $b) { return $a->language <=> $b->language; },
+                'language_desc' => function($a, $b) { return $b->language <=> $a->language; },
+                'name_asc' => function($a, $b) { return $a->name <=> $b->name; },
+                'difficulty_asc' => function($a, $b) {
+                    $map = ['Beginner' => 1, 'Intermediate' => 2, 'Advanced' => 3];
+                    return $map[$a->difficulty_level] <=> $map[$b->difficulty_level];
+                },
+                'difficulty_desc' => function($a, $b) {
+                    $map = ['Beginner' => 1, 'Intermediate' => 2, 'Advanced' => 3];
+                    return $map[$b->difficulty_level] <=> $map[$a->difficulty_level];
+                }
+            ];
+
+            if (!empty($sortBy) && isset($allowedSorts[$sortBy])) {
+                usort($allCourses, $allowedSorts[$sortBy]);
+            } else {
+                usort($allCourses, function($a, $b) { return $b->id <=> $a->id; }); // Default: id DESC
+            }
         }
 
-        // Sort all courses by their search_score (lowest/closest first)
-        usort($allCourses, function ($a, $b) {
-            return $a->search_score <=> $b->search_score;
-        });
+        // Manually apply Limit and Offset on the sorted array
+        $totalFound = count($allCourses);
+        $paginatedResults = array_slice($allCourses, $offset, $limit);
 
-        // We return ALL courses. The closest matches are naturally pushed to the top!
-        return $allCourses;
+        return [
+            'data' => $paginatedResults,
+            'total' => $totalFound
+        ];
     }
 
     /**

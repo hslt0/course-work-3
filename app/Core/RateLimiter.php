@@ -5,23 +5,19 @@ namespace App\Core;
 class RateLimiter
 {
     private string $storagePath;
-    private string $logPath;
     private int $maxAttempts;
     private int $decaySeconds;
 
     public function __construct(int $maxAttempts = 5, int $decaySeconds = 900) // 15 minutes
     {
         $this->storagePath = dirname(__FILE__, 3) . '/storage/ratelimit/';
-        $this->logPath = dirname(__FILE__, 3) . '/storage/logs/ratelimit.log';
         $this->maxAttempts = $maxAttempts;
         $this->decaySeconds = $decaySeconds;
 
         if (!is_dir($this->storagePath)) {
             mkdir($this->storagePath, 0777, true);
         }
-        if (!is_dir(dirname($this->logPath))) {
-            mkdir(dirname($this->logPath), 0777, true);
-        }
+        // No log path or log directory creation needed anymore
     }
 
     private function getIpAddress(): string
@@ -34,23 +30,10 @@ class RateLimiter
         return $this->storagePath . md5($key) . '.json';
     }
 
-    private function log(string $key, string $action): void
-    {
-        $logEntry = json_encode([
-            'timestamp' => date('Y-m-d H:i:s'),
-            'key' => $key,
-            'ip' => $this->getIpAddress(),
-            'action' => $action,
-            'message' => 'Rate limit exceeded'
-        ]) . PHP_EOL;
-
-        file_put_contents($this->logPath, $logEntry, FILE_APPEND);
-    }
-
     /**
      * Check if the key (e.g., IP address) has hit the rate limit.
      */
-    public function isThrottled(string $key, string $action = 'general'): bool
+    public function isThrottled(string $key): bool
     {
         $filePath = $this->getFilePath($key);
 
@@ -65,15 +48,7 @@ class RateLimiter
             return false;
         }
 
-        if ($data['attempts'] >= $this->maxAttempts) {
-            // Only log the first time they are throttled to avoid log spam
-            if (($data['attempts'] % $this->maxAttempts) === 0) {
-                $this->log($key, $action);
-            }
-            return true;
-        }
-
-        return false;
+        return $data['attempts'] >= $this->maxAttempts;
     }
 
     /**
@@ -101,20 +76,26 @@ class RateLimiter
 
     /**
      * A convenient static method to check the current user's IP for a specific action.
+     * @param string $action A unique identifier for the action being rate-limited.
+     * @param int $maxAttempts The maximum number of attempts allowed.
+     * @param int $decaySeconds The time window in seconds for the rate limit.
      */
-    public static function check(string $action = 'general'): bool
+    public static function check(string $action = 'general', int $maxAttempts = 5, int $decaySeconds = 900): bool
     {
-        $limiter = new self();
+        $limiter = new self($maxAttempts, $decaySeconds);
         $key = $action . '_' . $limiter->getIpAddress();
-        return $limiter->isThrottled($key, $action);
+        return $limiter->isThrottled($key);
     }
 
     /**
      * A convenient static method to record an attempt for the current user's IP for a specific action.
+     * @param string $action A unique identifier for the action being rate-limited.
+     * @param int $maxAttempts The maximum number of attempts allowed (used for initializing if needed).
+     * @param int $decaySeconds The time window in seconds for the rate limit (used for initializing if needed).
      */
-    public static function attempt(string $action = 'general'): void
+    public static function attempt(string $action = 'general', int $maxAttempts = 5, int $decaySeconds = 900): void
     {
-        $limiter = new self();
+        $limiter = new self($maxAttempts, $decaySeconds);
         $key = $action . '_' . $limiter->getIpAddress();
         $limiter->hit($key);
     }
