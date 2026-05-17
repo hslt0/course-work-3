@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Models\Lesson;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Progress;
 
 class LessonsController extends Controller
 {
@@ -27,10 +28,12 @@ class LessonsController extends Controller
         }
 
         $course = Course::getById($lesson->course_id);
+        $isCompleted = Progress::isLessonCompleted($_SESSION['user_id'], $id);
 
         $data = [
             'lesson' => $lesson,
             'course' => $course,
+            'isCompleted' => $isCompleted,
             'title' => $lesson->title
         ];
 
@@ -43,5 +46,27 @@ class LessonsController extends Controller
         }
 
         $this->view($viewName, $data);
+    }
+
+    public function complete(int $id): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . URLROOT . '/auth/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $lesson = Lesson::getById($id);
+            if ($lesson && Enrollment::isEnrolled($_SESSION['user_id'], $lesson->course_id)) {
+                Progress::markLessonComplete($_SESSION['user_id'], $id);
+            }
+            
+            // Redirect back to course page after marking complete
+            header('Location: ' . URLROOT . '/courses/show/' . $lesson->course_id);
+            exit;
+        }
+        
+        header('Location: ' . URLROOT);
+        exit;
     }
 }

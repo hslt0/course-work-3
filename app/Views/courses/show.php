@@ -93,11 +93,19 @@
         <?php else: ?>
             <div class="space-y-4 mb-8 <?= !$isEnrolled ? 'opacity-50 pointer-events-none' : '' ?>">
                 <?php foreach ($lessons as $index => $lesson): ?>
+                    <?php 
+                        $isLessonCompleted = false;
+                        if ($isEnrolled && isset($_SESSION['user_id'])) {
+                            $isLessonCompleted = App\Models\Progress::isLessonCompleted($_SESSION['user_id'], $lesson->id);
+                        }
+                    ?>
                     <a href="<?= $isEnrolled ? URLROOT . '/lessons/show/' . $lesson->id : '#' ?>" class="block bg-white border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow duration-200 flex items-center justify-between group cursor-pointer">
                         <div class="flex items-center space-x-4">
                             <!-- Icon based on lesson type -->
                             <div class="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center bg-gray-50 group-hover:bg-green-50 transition-colors">
-                                <?php if ($lesson->type === 'pdf'): ?>
+                                <?php if ($isLessonCompleted): ?>
+                                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <?php elseif ($lesson->type === 'pdf'): ?>
                                     <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                                 <?php elseif ($lesson->type === 'video'): ?>
                                     <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -111,18 +119,20 @@
                             </div>
                             
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors">
+                                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-green-600 transition-colors <?= $isLessonCompleted ? 'line-through text-gray-400' : '' ?>">
                                     <span class="text-gray-400 text-sm font-normal mr-2"><?= str_pad($index + 1, 2, '0', STR_PAD_LEFT) ?>.</span>
                                     <?= htmlspecialchars($lesson->title, ENT_QUOTES, 'UTF-8') ?>
                                 </h3>
-                                <p class="text-sm text-gray-500 uppercase tracking-wide mt-1 font-medium"><?= htmlspecialchars($lesson->type, ENT_QUOTES, 'UTF-8') ?></p>
+                                <p class="text-sm <?= $isLessonCompleted ? 'text-green-500' : 'text-gray-500' ?> uppercase tracking-wide mt-1 font-medium">
+                                    <?= $isLessonCompleted ? 'Completed' : htmlspecialchars($lesson->type, ENT_QUOTES, 'UTF-8') ?>
+                                </p>
                             </div>
                         </div>
                         
                         <div>
                             <?php if ($isEnrolled): ?>
                                 <span class="bg-gray-100 group-hover:bg-green-500 text-gray-600 group-hover:text-white px-4 py-2 rounded-lg font-medium transition-colors border border-transparent group-hover:border-green-600 text-sm flex items-center">
-                                    View Lesson
+                                    <?= $isLessonCompleted ? 'Review Lesson' : 'View Lesson' ?>
                                 </span>
                             <?php else: ?>
                                 <span class="text-gray-400 text-sm flex items-center">

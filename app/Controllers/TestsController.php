@@ -8,6 +8,7 @@ use App\Models\Question;
 use App\Models\Answer;
 use App\Models\Course;
 use App\Models\Enrollment;
+use App\Models\Progress;
 
 class TestsController extends Controller
 {
@@ -68,8 +69,10 @@ class TestsController extends Controller
             return;
         }
 
+        $userId = $_SESSION['user_id'] ?? null;
+
         // Security check: Must be enrolled to submit
-        if (!isset($_SESSION['user_id']) || !Enrollment::isEnrolled($_SESSION['user_id'], $test->course_id)) {
+        if (!$userId || !Enrollment::isEnrolled($userId, $test->course_id)) {
             header('Location: ' . URLROOT . '/courses/show/' . $test->course_id);
             exit;
         }
@@ -107,6 +110,9 @@ class TestsController extends Controller
                 'is_correct' => $userAnswerCorrect
             ];
         }
+
+        // Save the test result to the database
+        Progress::saveTestResult($userId, $id, $score, $totalQuestions);
 
         $this->view('tests/results', [
             'test' => $test,
