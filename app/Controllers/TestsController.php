@@ -7,6 +7,7 @@ use App\Models\Test;
 use App\Models\Question;
 use App\Models\Answer;
 use App\Models\Course;
+use App\Models\Enrollment;
 
 class TestsController extends Controller
 {
@@ -21,6 +22,13 @@ class TestsController extends Controller
             http_response_code(404);
             $this->view('errors/404', ['title' => 'Test Not Found']);
             return;
+        }
+
+        // Check if user is logged in and enrolled in the parent course
+        if (!isset($_SESSION['user_id']) || !Enrollment::isEnrolled($_SESSION['user_id'], $test->course_id)) {
+            // Redirect to course page if not enrolled
+            header('Location: ' . URLROOT . '/courses/show/' . $test->course_id);
+            exit;
         }
 
         $course = Course::getById($test->course_id);
@@ -58,6 +66,12 @@ class TestsController extends Controller
             http_response_code(404);
             $this->view('errors/404', ['title' => 'Test Not Found']);
             return;
+        }
+
+        // Security check: Must be enrolled to submit
+        if (!isset($_SESSION['user_id']) || !Enrollment::isEnrolled($_SESSION['user_id'], $test->course_id)) {
+            header('Location: ' . URLROOT . '/courses/show/' . $test->course_id);
+            exit;
         }
 
         $course = Course::getById($test->course_id);

@@ -8,7 +8,7 @@ const DB_NAME = 'coursework3';
 
 // App Root
 define('APPROOT', dirname(__FILE__, 2));
-// URL Root
-const URLROOT = 'http://course-work/';
+// URL Root (No trailing slash to prevent double slashes in views)
+const URLROOT = 'http://course-work';
 // Site Name
 const SITENAME = 'LanguageCourses';

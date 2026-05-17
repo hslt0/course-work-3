@@ -4,7 +4,8 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Models\Lesson;
-use App\Models\Course; // To get course context
+use App\Models\Course;
+use App\Models\Enrollment;
 
 class LessonsController extends Controller
 {
@@ -16,6 +17,13 @@ class LessonsController extends Controller
             http_response_code(404);
             $this->view('errors/404', ['title' => 'Lesson Not Found']);
             return;
+        }
+
+        // Check if user is logged in and enrolled in the parent course
+        if (!isset($_SESSION['user_id']) || !Enrollment::isEnrolled($_SESSION['user_id'], $lesson->course_id)) {
+            // Redirect to course page if not enrolled
+            header('Location: ' . URLROOT . '/courses/show/' . $lesson->course_id);
+            exit;
         }
 
         $course = Course::getById($lesson->course_id);

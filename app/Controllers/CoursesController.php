@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Models\Course;
 use App\Models\Lesson;
 use App\Models\Test;
+use App\Models\Enrollment;
 
 class CoursesController extends Controller
 {
@@ -45,11 +46,52 @@ class CoursesController extends Controller
         $lessons = Lesson::getForCourse($id);
         $tests = Test::getForCourse($id);
 
+        $isEnrolled = false;
+        if (isset($_SESSION['user_id'])) {
+            $isEnrolled = Enrollment::isEnrolled($_SESSION['user_id'], $id);
+        }
+
         $this->view('courses/show', [
             'course' => $course,
             'lessons' => $lessons,
             'tests' => $tests,
+            'isEnrolled' => $isEnrolled,
             'title' => $course->name
         ]);
+    }
+
+    public function enroll(int $id): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            // Must be logged in to enroll
+            header('Location: ' . URLROOT . '/auth/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $course = Course::getById($id);
+            if ($course) {
+                Enrollment::enroll($_SESSION['user_id'], $id);
+            }
+        }
+
+        header('Location: ' . URLROOT . '/courses/show/' . $id);
+        exit;
+    }
+
+    public function unenroll(int $id): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ' . URLROOT . '/auth/login');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            Enrollment::unenroll($_SESSION['user_id'], $id);
+        }
+
+        // Redirect back to the course or to their dashboard
+        header('Location: ' . URLROOT . '/courses/show/' . $id);
+        exit;
     }
 }

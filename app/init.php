@@ -1,4 +1,6 @@
 <?php
+// Start session for authentication
+session_start();
 
 // Load Configuration
 require_once 'Config/config.php';

@@ -34,6 +34,23 @@ class Course
     }
 
     /**
+     * Gets all courses a specific user is enrolled in.
+     */
+    public static function getEnrolledByUser(int $userId): array
+    {
+        $db = Database::getInstance();
+        $stmt = $db->prepare('
+            SELECT c.* 
+            FROM courses c
+            JOIN enrollments e ON c.id = e.course_id
+            WHERE e.user_id = :user_id
+            ORDER BY e.enrolled_at DESC
+        ');
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
+    }
+
+    /**
      * Search and filter courses.
      * Uses PHP Levenshtein distance to score and sort all results based on closeness to the search query.
      */
