@@ -54,38 +54,48 @@ class Course
      * Search and filter courses.
      * Uses PHP Levenshtein distance to score and sort all results based on closeness to the search query.
      */
-    public static function searchAndFilter(?string $search, ?string $language, ?string $difficulty, ?string $sortBy): array
+    public static function searchAndFilter(?string $search, ?string $language, ?string $difficulty, ?string $sortBy, ?string $enrolledFilter = null, ?int $userId = null): array
     {
         $db = Database::getInstance();
         
-        $query = 'SELECT * FROM courses WHERE 1=1';
+        $query = 'SELECT c.* FROM courses c ';
         $params = [];
+
+        if ($enrolledFilter === 'yes' && $userId !== null) {
+            $query .= ' JOIN enrollments e ON c.id = e.course_id WHERE e.user_id = :user_id ';
+            $params['user_id'] = $userId;
+        } elseif ($enrolledFilter === 'no' && $userId !== null) {
+            $query .= ' LEFT JOIN enrollments e ON c.id = e.course_id AND e.user_id = :user_id WHERE e.user_id IS NULL ';
+            $params['user_id'] = $userId;
+        } else {
+            $query .= ' WHERE 1=1 ';
+        }
 
         // Apply dropdown filters directly in SQL
         if (!empty($language)) {
-            $query .= ' AND language = :language';
+            $query .= ' AND c.language = :language';
             $params['language'] = $language;
         }
 
         if (!empty($difficulty)) {
-            $query .= ' AND difficulty_level = :difficulty';
+            $query .= ' AND c.difficulty_level = :difficulty';
             $params['difficulty'] = $difficulty;
         }
 
         // Validate sort by to prevent SQL injection
         $allowedSorts = [
-            'language_asc' => 'language ASC',
-            'language_desc' => 'language DESC',
-            'difficulty_asc' => 'FIELD(difficulty_level, "Beginner", "Intermediate", "Advanced") ASC',
-            'difficulty_desc' => 'FIELD(difficulty_level, "Beginner", "Intermediate", "Advanced") DESC',
-            'name_asc' => 'name ASC',
+            'language_asc' => 'c.language ASC',
+            'language_desc' => 'c.language DESC',
+            'difficulty_asc' => 'FIELD(c.difficulty_level, "Beginner", "Intermediate", "Advanced") ASC',
+            'difficulty_desc' => 'FIELD(c.difficulty_level, "Beginner", "Intermediate", "Advanced") DESC',
+            'name_asc' => 'c.name ASC',
         ];
 
         // Only apply SQL sorting if they selected a specific dropdown sort
         if (!empty($sortBy) && array_key_exists($sortBy, $allowedSorts)) {
             $query .= ' ORDER BY ' . $allowedSorts[$sortBy];
         } else {
-            $query .= ' ORDER BY id DESC'; // Default sorting
+            $query .= ' ORDER BY c.id DESC'; // Default sorting
         }
 
         $stmt = $db->prepare($query);

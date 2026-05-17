@@ -16,8 +16,16 @@ class CoursesController extends Controller
         $language = $_GET['language'] ?? '';
         $difficulty = $_GET['difficulty'] ?? '';
         $sortBy = $_GET['sort'] ?? '';
+        
+        // Only consider the enrollment filter if the user is logged in
+        $enrolledFilter = '';
+        if (isset($_SESSION['user_id']) && isset($_GET['enrolled'])) {
+            $enrolledFilter = $_GET['enrolled']; // e.g. 'yes' or 'no'
+        }
+        
+        $userId = $_SESSION['user_id'] ?? null;
 
-        $courses = Course::searchAndFilter($search, $language, $difficulty, $sortBy);
+        $courses = Course::searchAndFilter($search, $language, $difficulty, $sortBy, $enrolledFilter, $userId);
         $languages = Course::getDistinctLanguages();
 
         $this->view('courses/index', [
@@ -27,7 +35,8 @@ class CoursesController extends Controller
                 'search' => $search,
                 'language' => $language,
                 'difficulty' => $difficulty,
-                'sort' => $sortBy
+                'sort' => $sortBy,
+                'enrolled' => $enrolledFilter
             ],
             'title' => 'Our Courses'
         ]);
