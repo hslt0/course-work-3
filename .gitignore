@@ -29,4 +29,3 @@ Thumbs.db
 
 # Storage
 /storage/*
-!/storage/logs/.gitkeep
