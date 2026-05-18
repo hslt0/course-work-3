@@ -20,6 +20,8 @@ class AdminController extends Controller
             http_response_code(403);
             die("Access Denied: You do not have permission to view this page.");
         }
+
+        parent::__construct();
     }
 
     public function dashboard(): void
@@ -584,7 +586,7 @@ class AdminController extends Controller
                 if (Question::update($id, $data['question_text'])) {
                     // Update answers: simplest way is delete old ones, recreate new ones
                     Answer::deleteByQuestionId($id);
-                    
+
                     foreach ($data['answers'] as $index => $ansText) {
                         if (!empty($ansText)) {
                             $isCorrect = ((int)$data['correct_answer'] === $index) ? 1 : 0;
