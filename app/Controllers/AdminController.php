@@ -8,6 +8,8 @@ use App\Models\Lesson;
 use App\Models\Test;
 use App\Models\Question;
 use App\Models\Answer;
+use App\Models\User;
+use App\Models\Comment;
 
 class AdminController extends Controller
 {
@@ -28,6 +30,41 @@ class AdminController extends Controller
             'courses' => $courses,
             'title' => 'Admin Dashboard'
         ]);
+    }
+
+    public function users(): void
+    {
+        $users = User::getAllUsers();
+        
+        $this->view('admin/users', [
+            'users' => $users,
+            'title' => 'Manage Users'
+        ]);
+    }
+
+    public function toggle_ban(int $id): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $status = isset($_POST['ban_status']) && $_POST['ban_status'] === '1';
+            User::toggleBan($id, $status);
+        }
+        header('Location: ' . URLROOT . '/admin/users');
+        exit;
+    }
+
+    public function delete_comment(int $id): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $lessonId = $_POST['lesson_id'] ?? null;
+            Comment::delete($id);
+            
+            if ($lessonId) {
+                header('Location: ' . URLROOT . '/lessons/show/' . $lessonId . '#discussion');
+                exit;
+            }
+        }
+        header('Location: ' . URLROOT . '/admin/dashboard');
+        exit;
     }
 
     public function create_course(): void
@@ -144,11 +181,37 @@ class AdminController extends Controller
     private function handleFileUpload(?array $fileInfo, ?string $existingPath = null): ?string
     {
         if (!$fileInfo || $fileInfo['error'] === UPLOAD_ERR_NO_FILE) {
-            return $existingPath; // Keep existing path if no new file is uploaded
+            return $existingPath; 
         }
 
         if ($fileInfo['error'] !== UPLOAD_ERR_OK) {
-            return null; // Upload error
+            return null; 
+        }
+
+        // Hardening: Verify MIME type to prevent malicious uploads (e.g. PHP disguised as PDF)
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fileInfo['tmp_name']);
+        finfo_close($finfo);
+
+        $allowedMimeTypes = [
+            'application/pdf', 
+            'video/mp4', 
+            'text/plain', 
+            'text/markdown',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation', // pptx
+            'application/vnd.ms-powerpoint' // ppt
+        ];
+
+        if (!in_array($mimeType, $allowedMimeTypes)) {
+            return null; // Invalid file type
+        }
+
+        // Hardening: Strictly validate file extension
+        $extension = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['pdf', 'mp4', 'txt', 'md', 'pptx', 'ppt'];
+        
+        if (!in_array($extension, $allowedExtensions)) {
+            return null;
         }
 
         $uploadDir = __DIR__ . '/../../public/uploads/lessons/';
@@ -157,11 +220,11 @@ class AdminController extends Controller
         }
 
         // Generate a safe, unique filename
-        $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9.\-_]/', '', basename($fileInfo['name']));
+        $fileName = time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
         $destination = $uploadDir . $fileName;
 
         if (move_uploaded_file($fileInfo['tmp_name'], $destination)) {
-            return '/uploads/lessons/' . $fileName; // Return the web path
+            return '/uploads/lessons/' . $fileName; 
         }
 
         return null;
@@ -199,7 +262,7 @@ class AdminController extends Controller
                 if ($uploadedPath) {
                     $contentPath = $uploadedPath;
                 } else {
-                    $data['error'] = 'File upload failed. Make sure the file is valid and within size limits.';
+                    $data['error'] = 'File upload failed. Make sure the file is a valid format (PDF, MP4, Markdown, PPTX) and within size limits.';
                 }
             } else {
                 $contentPath = trim($_POST['content_path'] ?? '');
@@ -220,7 +283,6 @@ class AdminController extends Controller
                     }
                 }
             }
-            // Retain the entered path if there was an error
             if (empty($data['content_path']) && !empty($contentPath)) {
                 $data['content_path'] = $contentPath;
             }
@@ -264,13 +326,10 @@ class AdminController extends Controller
                 if ($uploadedPath) {
                     $contentPath = $uploadedPath;
                 } else {
-                    // No new file uploaded and an error occurred OR they just selected upload but didn't pick a file
-                    // If no file was picked, we might want to keep the old path, but handleFileUpload takes care of that if error is UPLOAD_ERR_NO_FILE
                     $fileInfo = $_FILES['lesson_file'] ?? null;
                     if ($fileInfo && $fileInfo['error'] !== UPLOAD_ERR_NO_FILE) {
-                         $data['error'] = 'File upload failed. Make sure the file is valid and within size limits.';
+                         $data['error'] = 'File upload failed. Make sure the file is a valid format (PDF, MP4, Markdown, PPTX) and within size limits.';
                     } else {
-                        // They selected 'upload' but didn't pick a new file. Keep existing.
                         $contentPath = $lesson->content_path;
                     }
                 }
