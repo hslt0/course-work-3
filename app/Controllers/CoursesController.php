@@ -9,6 +9,7 @@ use App\Models\Lesson;
 use App\Models\Test;
 use App\Models\Enrollment;
 use App\Models\Review;
+use JetBrains\PhpStorm\NoReturn;
 
 class CoursesController extends Controller
 {
@@ -99,6 +100,7 @@ class CoursesController extends Controller
         ]);
     }
 
+    #[NoReturn]
     public function enroll(int $id): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -118,6 +120,7 @@ class CoursesController extends Controller
         exit;
     }
 
+    #[NoReturn]
     public function unenroll(int $id): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -134,6 +137,7 @@ class CoursesController extends Controller
         exit;
     }
 
+    #[NoReturn]
     public function review(int $id): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -158,5 +162,135 @@ class CoursesController extends Controller
 
         header('Location: ' . URLROOT . '/courses/show/' . $id . '#reviews');
         exit;
+    }
+
+    public function create_course(): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $data = [
+            'title' => 'Create Course',
+            'name' => '',
+            'language' => '',
+            'difficulty' => 'Beginner',
+            'description' => '',
+            'preview_image' => '',
+            'error' => ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = $this->getData($data);
+
+            if (empty($data['name']) || empty($data['language']) || empty($data['description'])) {
+                $data['error'] = 'Please fill out all required fields.';
+            } else {
+                if (Course::create($data['name'], $data['language'], $data['difficulty'], $data['description'], $data['preview_image'] ?: null)) {
+                    header('Location: ' . URLROOT . '/admin/dashboard');
+                    exit;
+                } else {
+                    $data['error'] = 'Something went wrong creating the course.';
+                }
+            }
+        }
+
+        $this->view('admin/course_form', $data);
+    }
+
+    public function edit_course(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $course = Course::getById($id);
+
+        if (!$course) {
+            header('Location: ' . URLROOT . '/admin/dashboard');
+            exit;
+        }
+
+        $data = [
+            'title' => 'Edit Course',
+            'id' => $course->id,
+            'name' => $course->name,
+            'language' => $course->language,
+            'difficulty' => $course->difficulty_level,
+            'description' => $course->description,
+            'preview_image' => $course->preview_image ?? '',
+            'error' => ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $data = $this->getData($data);
+
+            if (empty($data['name']) || empty($data['language']) || empty($data['description'])) {
+                $data['error'] = 'Please fill out all required fields.';
+            } else {
+                if (Course::update($id, $data['name'], $data['language'], $data['difficulty'], $data['description'], $data['preview_image'] ?: null)) {
+                    header('Location: ' . URLROOT . '/admin/dashboard');
+                    exit;
+                } else {
+                    $data['error'] = 'Something went wrong updating the course.';
+                }
+            }
+        }
+
+        $this->view('admin/course_form', $data);
+    }
+
+    #[NoReturn]
+    public function delete_course(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            Course::delete($id);
+        }
+        header('Location: ' . URLROOT . '/admin/dashboard');
+        exit;
+    }
+
+    public function manage_course(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $course = Course::getById($id);
+
+        if (!$course) {
+            header('Location: ' . URLROOT . '/admin/dashboard');
+            exit;
+        }
+
+        $lessons = Lesson::getForCourse($id);
+        $tests = Test::getForCourse($id);
+
+        $this->view('admin/manage_course', [
+            'course' => $course,
+            'lessons' => $lessons,
+            'tests' => $tests,
+            'title' => 'Manage Content: ' . $course->name
+        ]);
+    }
+
+    private function getData(array $data): array
+    {
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+        $data['name'] = trim($_POST['name']);
+        $data['language'] = trim($_POST['language']);
+        $data['difficulty'] = trim($_POST['difficulty']);
+        $data['description'] = trim($_POST['description']);
+        $data['preview_image'] = trim($_POST['preview_image']);
+        return $data;
     }
 }

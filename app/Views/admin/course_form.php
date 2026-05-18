@@ -35,7 +35,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <form action="<?= isset($id) ? URLROOT . '/admin/edit_course/' . $id : URLROOT . '/admin/create_course' ?>" method="POST" class="p-8 space-y-6">
+            <form action="<?= isset($id) ? URLROOT . '/courses/edit_course/' . $id : URLROOT . '/courses/create_course' ?>" method="POST" class="p-8 space-y-6">
                 
                 <?php if (!empty($error)): ?>
                     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">

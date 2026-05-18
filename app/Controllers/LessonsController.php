@@ -110,4 +110,234 @@ class LessonsController extends Controller
         header('Location: ' . URLROOT . '/lessons/show/' . $id . '#discussion');
         exit;
     }
+
+    public function delete_comment(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $lessonId = $_POST['lesson_id'] ?? null;
+            Comment::delete($id);
+
+            if ($lessonId) {
+                header('Location: ' . URLROOT . '/lessons/show/' . $lessonId . '#discussion');
+                exit;
+            }
+        }
+        header('Location: ' . URLROOT . '/admin/dashboard');
+        exit;
+    }
+
+    public function create_lesson(int $courseId): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $course = Course::getById($courseId);
+        if (!$course) {
+            header('Location: ' . URLROOT . '/admin/dashboard');
+            exit;
+        }
+
+        $data = [
+            'title' => 'Create Lesson for ' . $course->name,
+            'course_id' => $courseId,
+            'lesson_id' => null,
+            'lesson_title' => '',
+            'type' => 'video',
+            'content_path' => '',
+            'error' => ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            $data['lesson_title'] = trim($_POST['lesson_title']);
+            $data['type'] = trim($_POST['type']);
+            $contentSource = $_POST['content_source'] ?? 'path';
+
+            $contentPath = '';
+
+            if ($contentSource === 'upload') {
+                $uploadedPath = $this->handleFileUpload($_FILES['lesson_file'] ?? null);
+                if ($uploadedPath) {
+                    $contentPath = $uploadedPath;
+                } else {
+                    $data['error'] = 'File upload failed. Make sure the file is a valid format (PDF, MP4, Markdown, PPTX) and within size limits.';
+                }
+            } else {
+                $contentPath = trim($_POST['content_path'] ?? '');
+                if (empty($contentPath)) {
+                    $data['error'] = 'Please provide a content path or URL.';
+                }
+            }
+
+            if (empty($data['error'])) {
+                if (empty($data['lesson_title']) || empty($data['type'])) {
+                    $data['error'] = 'Please fill out all required fields.';
+                } else {
+                    if (Lesson::create($courseId, $data['lesson_title'], $data['type'], $contentPath)) {
+                        header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
+                        exit;
+                    } else {
+                        $data['error'] = 'Something went wrong creating the lesson.';
+                    }
+                }
+            }
+            if (!empty($contentPath)) {
+                $data['content_path'] = $contentPath;
+            }
+        }
+
+        $this->view('admin/lesson_form', $data);
+    }
+
+    public function edit_lesson(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $lesson = Lesson::getById($id);
+
+        if (!$lesson) {
+            header('Location: ' . URLROOT . '/admin/dashboard');
+            exit;
+        }
+
+        $courseId = $lesson->course_id;
+
+        $data = [
+            'title' => 'Edit Lesson',
+            'course_id' => $courseId,
+            'lesson_id' => $lesson->id,
+            'lesson_title' => $lesson->title,
+            'type' => $lesson->type,
+            'content_path' => $lesson->content_path,
+            'error' => ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            $data['lesson_title'] = trim($_POST['lesson_title']);
+            $data['type'] = trim($_POST['type']);
+            $contentSource = $_POST['content_source'] ?? 'path';
+
+            $contentPath = '';
+
+            if ($contentSource === 'upload') {
+                $uploadedPath = $this->handleFileUpload($_FILES['lesson_file'] ?? null, $lesson->content_path);
+                if ($uploadedPath) {
+                    $contentPath = $uploadedPath;
+                } else {
+                    $fileInfo = $_FILES['lesson_file'] ?? null;
+                    if ($fileInfo && $fileInfo['error'] !== UPLOAD_ERR_NO_FILE) {
+                        $data['error'] = 'File upload failed. Make sure the file is a valid format (PDF, MP4, Markdown, PPTX) and within size limits.';
+                    } else {
+                        $contentPath = $lesson->content_path;
+                    }
+                }
+            } else {
+                $contentPath = trim($_POST['content_path'] ?? '');
+                if (empty($contentPath)) {
+                    $data['error'] = 'Please provide a content path or URL.';
+                }
+            }
+
+            if (empty($data['error'])) {
+                if (empty($data['lesson_title']) || empty($data['type'])) {
+                    $data['error'] = 'Please fill out all required fields.';
+                } else {
+                    if (Lesson::update($id, $data['lesson_title'], $data['type'], $contentPath)) {
+                        header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
+                        exit;
+                    } else {
+                        $data['error'] = 'Something went wrong updating the lesson.';
+                    }
+                }
+            }
+
+            if (empty($data['content_path']) && !empty($contentPath)) {
+                $data['content_path'] = $contentPath;
+            }
+        }
+
+        $this->view('admin/lesson_form', $data);
+    }
+
+    public function delete_lesson(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $lesson = Lesson::getById($id);
+            if ($lesson) {
+                $courseId = $lesson->course_id;
+                Lesson::delete($id);
+                header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
+                exit;
+            }
+        }
+        header('Location: ' . URLROOT . '/admin/dashboard');
+        exit;
+    }
+
+    private function handleFileUpload(?array $fileInfo, ?string $existingPath = null): ?string
+    {
+        if (!$fileInfo || $fileInfo['error'] === UPLOAD_ERR_NO_FILE) {
+            return $existingPath;
+        }
+
+        if ($fileInfo['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = finfo_file($finfo, $fileInfo['tmp_name']);
+        finfo_close($finfo);
+
+        $allowedMimeTypes = [
+            'application/pdf',
+            'video/mp4',
+            'text/plain',
+            'text/markdown',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.ms-powerpoint'
+        ];
+
+        if (!in_array($mimeType, $allowedMimeTypes)) {
+            return null;
+        }
+
+        $extension = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+        $allowedExtensions = ['pdf', 'mp4', 'txt', 'md', 'pptx', 'ppt'];
+
+        if (!in_array($extension, $allowedExtensions)) {
+            return null;
+        }
+
+        $uploadDir = __DIR__ . '/../../public/uploads/lessons/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $fileName = time() . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+        $destination = $uploadDir . $fileName;
+
+        if (move_uploaded_file($fileInfo['tmp_name'], $destination)) {
+            return '/uploads/lessons/' . $fileName;
+        }
+
+        return null;
+    }
 }
