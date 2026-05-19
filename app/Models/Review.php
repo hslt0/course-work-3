@@ -42,7 +42,7 @@ class Review
         $db = Database::getInstance();
         $stmt = $db->prepare('SELECT AVG(rating) FROM reviews WHERE course_id = :course_id');
         $stmt->execute(['course_id' => $courseId]);
-        return (float) round($stmt->fetchColumn() ?: 0, 1);
+        return round($stmt->fetchColumn() ?: 0, 1);
     }
 
     /**

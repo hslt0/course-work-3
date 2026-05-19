@@ -26,38 +26,29 @@ class User
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('SELECT * FROM users WHERE email = :email');
-        if ($stmt) {
-            $stmt->execute(['email' => $email]);
-            $user = $stmt->fetchObject(self::class);
-            return $user ?: null;
-        }
-        return null;
+        $stmt->execute(['email' => $email]);
+        $user = $stmt->fetchObject(self::class);
+        return $user ?: null;
     }
 
     public static function findById(int $id): ?self
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('SELECT * FROM users WHERE id = :id');
-        if ($stmt) {
-            $stmt->execute(['id' => $id]);
-            $user = $stmt->fetchObject(self::class);
-            return $user ?: null;
-        }
-        return null;
+        $stmt->execute(['id' => $id]);
+        $user = $stmt->fetchObject(self::class);
+        return $user ?: null;
     }
 
     public static function register(string $name, string $email, string $password): bool
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('INSERT INTO users (name, email, password) VALUES (:name, :email, :password)');
-        if ($stmt) {
-            return $stmt->execute([
-                'name' => $name,
-                'email' => $email,
-                'password' => password_hash($password, PASSWORD_DEFAULT)
-            ]);
-        }
-        return false;
+        return $stmt->execute([
+            'name' => $name,
+            'email' => $email,
+            'password' => password_hash($password, PASSWORD_DEFAULT)
+        ]);
     }
 
     public static function login(string $email, string $password): ?self

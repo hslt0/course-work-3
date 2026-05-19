@@ -51,7 +51,7 @@ class UserController extends Controller
 
         $users = User::getAllUsers();
 
-        $this->view('admin/users', [
+        $this->view('user/users', [
             'users' => $users,
             'title' => 'Manage Users'
         ]);

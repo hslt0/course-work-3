@@ -80,7 +80,7 @@
                                         <?php endif; ?>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <form action="<?= URLROOT ?>/admin/toggle_ban/<?= $u->id ?>" method="POST" class="inline-block">
+                                        <form action="<?= URLROOT ?>/user/toggle_ban/<?= $u->id ?>" method="POST" class="inline-block">
                                             <?php if ($u->is_banned): ?>
                                                 <input type="hidden" name="ban_status" value="0">
                                                 <button type="submit" class="text-green-600 hover:text-green-900 font-bold">Unban</button>

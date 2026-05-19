@@ -1,3 +1,11 @@
+<?php
+/**
+ * @var Lesson $lesson
+ */
+
+use App\Models\Lesson;
+
+?>
 <div id="discussion" class="mt-12 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="p-8 border-b border-gray-100">
         <h2 class="text-2xl font-bold text-gray-900 flex items-center">

@@ -196,7 +196,7 @@ class CoursesController extends Controller
             }
         }
 
-        $this->view('admin/course_form', $data);
+        $this->view('courses/course_form', $data);
     }
 
     public function edit_course(int $id): void
@@ -239,7 +239,7 @@ class CoursesController extends Controller
             }
         }
 
-        $this->view('admin/course_form', $data);
+        $this->view('courses/course_form', $data);
     }
 
     #[NoReturn]
@@ -274,7 +274,7 @@ class CoursesController extends Controller
         $lessons = Lesson::getForCourse($id);
         $tests = Test::getForCourse($id);
 
-        $this->view('admin/manage_course', [
+        $this->view('courses/manage_course', [
             'course' => $course,
             'lessons' => $lessons,
             'tests' => $tests,

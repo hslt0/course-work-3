@@ -1,8 +1,10 @@
 <?php
 
 // Load .env variables if available
+use App\Core\DotEnv;
+
 require_once dirname(__FILE__, 2) . '/Core/DotEnv.php';
-\App\Core\DotEnv::load(dirname(__FILE__, 3) . '/.env');
+DotEnv::load(dirname(__FILE__, 3) . '/.env');
 
 // Database Configuration (Fallback to old defaults if env is missing)
 define('DB_HOST', $_ENV['DB_HOST'] ?? '127.0.0.1');

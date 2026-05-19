@@ -19,7 +19,7 @@ class Answer
     public static function getForQuestion(int $questionId): array
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM answers WHERE question_id = :question_id ORDER BY id ASC');
+        $stmt = $db->prepare('SELECT * FROM answers WHERE question_id = :question_id ORDER BY id ');
         $stmt->execute(['question_id' => $questionId]);
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }

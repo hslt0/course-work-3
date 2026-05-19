@@ -6,6 +6,7 @@ use App\Core\Controller;
 use App\Core\CSRF;
 use App\Core\RateLimiter;
 use App\Models\User;
+use JetBrains\PhpStorm\NoReturn;
 
 class AuthController extends Controller
 {
@@ -33,7 +34,7 @@ class AuthController extends Controller
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Enforce Specific Login Rate Limiting (5 attempts per 15 minutes)
-            if (RateLimiter::check('login_attempt', 5, 900)) {
+            if (RateLimiter::check('login_attempt')) {
                 $data['email_err'] = 'Too many login attempts. Please wait 15 minutes and try again.';
                 $this->view('auth/login', $data);
                 return;
@@ -72,7 +73,7 @@ class AuthController extends Controller
                     exit;
                 } else {
                     // This is a failed attempt, so we record it.
-                    RateLimiter::attempt('login_attempt', 5, 900);
+                    RateLimiter::attempt('login_attempt');
                     $data['password_err'] = 'Password incorrect or email not found';
                 }
             }
@@ -154,6 +155,7 @@ class AuthController extends Controller
         $this->view('auth/register', $data);
     }
 
+    #[NoReturn]
     public function logout(): void
     {
         unset($_SESSION['user_id']);

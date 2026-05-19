@@ -20,7 +20,7 @@ class Lesson
     public static function getForCourse(int $courseId): array
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id ORDER BY order_index ASC, id ASC');
+        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id ORDER BY order_index , id ');
         $stmt->execute(['course_id' => $courseId]);
         
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
@@ -57,7 +57,7 @@ class Lesson
     public static function getNextLesson(int $courseId, int $currentOrderIndex): ?self
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id AND order_index > :order_index ORDER BY order_index ASC LIMIT 1');
+        $stmt = $db->prepare('SELECT * FROM lessons WHERE course_id = :course_id AND order_index > :order_index ORDER BY order_index LIMIT 1');
         $stmt->execute(['course_id' => $courseId, 'order_index' => $currentOrderIndex]);
         $lesson = $stmt->fetchObject(self::class);
         return $lesson ?: null;

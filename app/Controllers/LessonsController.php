@@ -198,7 +198,7 @@ class LessonsController extends Controller
             }
         }
 
-        $this->view('admin/lesson_form', $data);
+        $this->view('lessons/lesson_form', $data);
     }
 
     public function edit_lesson(int $id): void
@@ -273,7 +273,7 @@ class LessonsController extends Controller
             }
         }
 
-        $this->view('admin/lesson_form', $data);
+        $this->view('lessons/lesson_form', $data);
     }
 
     #[NoReturn]

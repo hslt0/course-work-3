@@ -11,6 +11,7 @@ use App\Models\Answer;
 use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Progress;
+use JetBrains\PhpStorm\NoReturn;
 
 class TestsController extends Controller
 {
@@ -136,5 +137,98 @@ class TestsController extends Controller
             'results' => $results,
             'title' => $test->title . ' - Results'
         ]);
+    }
+
+    public function manage_test(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $test = Test::getById($id);
+        if (!$test) {
+            header('Location: ' . URLROOT . '/admin/dashboard');
+            exit;
+        }
+
+        $course = Course::getById($test->course_id);
+        $questions = Question::getForTest($id);
+        
+        $questionsWithAnswers = [];
+        foreach ($questions as $question) {
+            $questionsWithAnswers[] = [
+                'question' => $question,
+                'answers' => Answer::getForQuestion($question->id)
+            ];
+        }
+
+        $this->view('tests/manage_test', [
+            'test' => $test,
+            'course' => $course,
+            'questionsWithAnswers' => $questionsWithAnswers,
+            'title' => 'Manage Test: ' . $test->title
+        ]);
+    }
+
+    public function create_test(int $courseId): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        $course = Course::getById($courseId);
+        if (!$course) {
+            header('Location: ' . URLROOT . '/admin/dashboard');
+            exit;
+        }
+
+        $data = [
+            'title' => 'Create Test for ' . $course->name,
+            'course_id' => $courseId,
+            'test_title' => '',
+            'error' => ''
+        ];
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            $data['test_title'] = trim($_POST['test_title']);
+
+            if (empty($data['test_title'])) {
+                $data['error'] = 'Please enter a test title.';
+            } else {
+                if (Test::create($courseId, $data['test_title'])) {
+                    header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
+                    exit;
+                } else {
+                    $data['error'] = 'Something went wrong creating the test.';
+                }
+            }
+        }
+
+        $this->view('tests/test_form', $data);
+    }
+
+    #[NoReturn]
+    public function delete_test(int $id): void
+    {
+        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
+            http_response_code(403);
+            die("Access Denied");
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $test = Test::getById($id);
+            if ($test) {
+                $courseId = $test->course_id;
+                Test::delete($id);
+                header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
+                exit;
+            }
+        }
+        header('Location: ' . URLROOT . '/admin/dashboard');
+        exit;
     }
 }

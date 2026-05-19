@@ -20,7 +20,7 @@
 <body class="bg-gray-50 font-sans text-gray-800 antialiased min-h-screen flex flex-col">
 
     <?php 
-        $backUrl = URLROOT . '/admin/manage_test/' . $test_id;
+        $backUrl = URLROOT . '/tests/manage_test/' . $test_id; 
         $backText = 'Back to Test Builder';
         require APPROOT . '/Views/partials/navbar.php'; 
     ?>
@@ -35,7 +35,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <form action="<?= $question_id !== null ? URLROOT . '/admin/edit_question/' . $question_id : URLROOT . '/admin/create_question/' . $test_id ?>" method="POST" class="p-8 space-y-8">
+            <form action="<?= $question_id !== null ? URLROOT . '/question/edit_question/' . $question_id : URLROOT . '/question/create_question/' . $test_id ?>" method="POST" class="p-8 space-y-8">
                 
                 <?php if (!empty($error)): ?>
                     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="pt-8 border-t border-gray-100 flex justify-end gap-4">
-                    <a href="<?= URLROOT ?>/admin/manage_test/<?= $test_id ?>" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors">Cancel</a>
+                    <a href="<?= URLROOT ?>/tests/manage_test/<?= $test_id ?>" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors">Cancel</a>
                     <button type="submit" class="px-8 py-3 border border-transparent rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                         Save Question

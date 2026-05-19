@@ -33,7 +33,7 @@
                 <p class="mt-2 text-gray-500 text-sm">Course: <?= htmlspecialchars($course->name, ENT_QUOTES, 'UTF-8') ?></p>
             </div>
             <div>
-                <a href="<?= URLROOT ?>/admin/create_question/<?= $test->id ?>" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors">
+                <a href="<?= URLROOT ?>/question/create_question/<?= $test->id ?>" class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent text-sm font-bold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-colors">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     Add Question
                 </a>
@@ -55,10 +55,10 @@
                             
                             <!-- Actions (Visible on hover) -->
                             <div class="absolute top-8 right-8 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                                <a href="<?= URLROOT ?>/admin/edit_question/<?= $item['question']->id ?>" class="text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors" title="Edit Question">
+                                <a href="<?= URLROOT ?>/question/edit_question/<?= $item['question']->id ?>" class="text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors" title="Edit Question">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </a>
-                                <form action="<?= URLROOT ?>/admin/delete_question/<?= $item['question']->id ?>" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
+                                <form action="<?= URLROOT ?>/question/delete_question/<?= $item['question']->id ?>" method="POST" onsubmit="return confirm('Are you sure you want to delete this question?');">
                                     <input type="hidden" name="test_id" value="<?= $test->id ?>">
                                     <button type="submit" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Delete Question">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>

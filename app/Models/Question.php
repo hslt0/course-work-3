@@ -27,7 +27,7 @@ class Question
     public static function getForTest(int $testId): array
     {
         $db = Database::getInstance();
-        $stmt = $db->prepare('SELECT * FROM questions WHERE test_id = :test_id ORDER BY id ASC');
+        $stmt = $db->prepare('SELECT * FROM questions WHERE test_id = :test_id ORDER BY id ');
         $stmt->execute(['test_id' => $testId]);
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }

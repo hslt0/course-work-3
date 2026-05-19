@@ -27,7 +27,7 @@ class Comment
             FROM comments c
             JOIN users u ON c.user_id = u.id
             WHERE c.lesson_id = :lesson_id
-            ORDER BY c.created_at ASC
+            ORDER BY c.created_at
         ');
         $stmt->execute(['lesson_id' => $lessonId]);
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);

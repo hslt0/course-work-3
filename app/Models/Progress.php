@@ -14,12 +14,9 @@ class Progress
     {
         $db = Database::getInstance();
         
-        // Use INSERT IGNORE so it won't fail if they already completed it
-        $stmt = $db->prepare('INSERT IGNORE INTO completed_lessons (user_id, lesson_id) VALUES (:user_id, :lesson_id)');
-        if ($stmt) {
-            return $stmt->execute(['user_id' => $userId, 'lesson_id' => $lessonId]);
-        }
-        return false;
+        // Use INSERT IGNORE or ON CONFLICT so it won't fail if they already completed it
+        $stmt = $db->prepare('INSERT INTO completed_lessons (user_id, lesson_id) VALUES (:user_id, :lesson_id) ON CONFLICT(user_id, lesson_id) DO NOTHING');
+        return $stmt->execute(['user_id' => $userId, 'lesson_id' => $lessonId]);
     }
 
     /**
@@ -29,11 +26,8 @@ class Progress
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('SELECT COUNT(*) FROM completed_lessons WHERE user_id = :user_id AND lesson_id = :lesson_id');
-        if ($stmt) {
-            $stmt->execute(['user_id' => $userId, 'lesson_id' => $lessonId]);
-            return (bool)$stmt->fetchColumn();
-        }
-        return false;
+        $stmt->execute(['user_id' => $userId, 'lesson_id' => $lessonId]);
+        return (bool)$stmt->fetchColumn();
     }
 
     /**
@@ -48,11 +42,8 @@ class Progress
             JOIN lessons l ON cl.lesson_id = l.id
             WHERE cl.user_id = :user_id AND l.course_id = :course_id
         ');
-        if ($stmt) {
-            $stmt->execute(['user_id' => $userId, 'course_id' => $courseId]);
-            return $stmt->fetchAll(PDO::FETCH_COLUMN);
-        }
-        return [];
+        $stmt->execute(['user_id' => $userId, 'course_id' => $courseId]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
     /**
@@ -62,15 +53,12 @@ class Progress
     {
         $db = Database::getInstance();
         $stmt = $db->prepare('INSERT INTO test_results (user_id, test_id, score, total) VALUES (:user_id, :test_id, :score, :total)');
-        if ($stmt) {
-            return $stmt->execute([
-                'user_id' => $userId,
-                'test_id' => $testId,
-                'score' => $score,
-                'total' => $total
-            ]);
-        }
-        return false;
+        return $stmt->execute([
+            'user_id' => $userId,
+            'test_id' => $testId,
+            'score' => $score,
+            'total' => $total
+        ]);
     }
 
     /**
@@ -87,10 +75,7 @@ class Progress
             WHERE tr.user_id = :user_id
             ORDER BY tr.taken_at DESC
         ');
-        if ($stmt) {
-            $stmt->execute(['user_id' => $userId]);
-            return $stmt->fetchAll(PDO::FETCH_OBJ);
-        }
-        return [];
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 }

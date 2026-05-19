@@ -127,7 +127,7 @@
                             <svg class="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </div>
                         <label for="search-input" class="sr-only">Search</label>
-                        <input id="search-input" type="text" name="search" value="<?= htmlspecialchars($filters['search'], ENT_QUOTES, 'UTF-8') ?>" placeholder="Search courses by name or language (e.g. Inglish)..." class="block w-full pl-14 pr-32 py-5 border-2 border-gray-100 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 text-lg transition-colors shadow-sm">
+                        <input id="search-input" type="text" name="search" value="<?= htmlspecialchars($filters['search'], ENT_QUOTES, 'UTF-8') ?>" placeholder="Search courses by name or language..." class="block w-full pl-14 pr-32 py-5 border-2 border-gray-100 rounded-2xl leading-5 bg-white placeholder-gray-400 focus:outline-none focus:border-green-500 focus:ring-0 text-lg transition-colors shadow-sm">
                         <div class="absolute inset-y-2 right-2">
                             <button type="submit" class="h-full bg-gray-900 hover:bg-gray-800 text-white font-bold py-2 px-8 rounded-xl transition-colors shadow-sm text-sm tracking-wide">
                                 SEARCH

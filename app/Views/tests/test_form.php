@@ -31,7 +31,7 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <form action="<?= URLROOT ?>/admin/create_test/<?= $course_id ?>" method="POST" class="p-8 space-y-6">
+            <form action="<?= URLROOT ?>/tests/create_test/<?= $course_id ?>" method="POST" class="p-8 space-y-6">
                 
                 <?php if (!empty($error)): ?>
                     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
