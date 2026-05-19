@@ -32,47 +32,6 @@ class AdminController extends Controller
         ]);
     }
 
-    public function users(): void
-    {
-        header('Location: ' . URLROOT . '/user/users');
-        exit;
-    }
-
-    #[NoReturn]
-    public function toggle_ban(int $id): void
-    {
-        header('Location: ' . URLROOT . '/user/toggle_ban/' . $id, true, 307);
-        exit;
-    }
-
-    // --- LESSON MANAGEMENT ---
-
-    #[NoReturn]
-    public function delete_comment(int $id): void
-    {
-        header('Location: ' . URLROOT . '/lessons/delete_comment/' . $id, true, 307);
-        exit;
-    }
-
-    public function create_lesson(int $courseId): void
-    {
-        header('Location: ' . URLROOT . '/lessons/create_lesson/' . $courseId);
-        exit;
-    }
-
-    public function edit_lesson(int $id): void
-    {
-        header('Location: ' . URLROOT . '/lessons/edit_lesson/' . $id);
-        exit;
-    }
-
-    #[NoReturn]
-    public function delete_lesson(int $id): void
-    {
-        header('Location: ' . URLROOT . '/lessons/delete_lesson/' . $id, true, 307);
-        exit;
-    }
-
     // --- TEST MANAGEMENT ---
 
     public function manage_test(int $id): void
@@ -126,7 +85,7 @@ class AdminController extends Controller
                 $data['error'] = 'Please enter a test title.';
             } else {
                 if (Test::create($courseId, $data['test_title'])) {
-                    header('Location: ' . URLROOT . '/admin/manage_course/' . $courseId);
+                    header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
                     exit;
                 } else {
                     $data['error'] = 'Something went wrong creating the test.';
@@ -145,7 +104,7 @@ class AdminController extends Controller
             if ($test) {
                 $courseId = $test->course_id;
                 Test::delete($id);
-                header('Location: ' . URLROOT . '/admin/manage_course/' . $courseId);
+                header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
                 exit;
             }
         }

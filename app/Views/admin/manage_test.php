@@ -17,7 +17,7 @@
 <body class="bg-gray-50 font-sans text-gray-800 antialiased min-h-screen flex flex-col">
 
     <?php 
-        $backUrl = URLROOT . '/admin/manage_course/' . $course->id;
+        $backUrl = URLROOT . '/courses/manage_course/' . $course->id;
         $backText = 'Back to Course Management';
         require APPROOT . '/Views/partials/navbar.php'; 
     ?>

@@ -8,6 +8,7 @@ use App\Models\Course;
 use App\Models\Enrollment;
 use App\Models\Progress;
 use App\Models\Comment;
+use JetBrains\PhpStorm\NoReturn;
 
 class LessonsController extends Controller
 {
@@ -59,6 +60,7 @@ class LessonsController extends Controller
         $this->view($viewName, $data);
     }
 
+    #[NoReturn]
     public function complete(int $id): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -86,6 +88,7 @@ class LessonsController extends Controller
         exit;
     }
 
+    #[NoReturn]
     public function comment(int $id): void
     {
         if (!isset($_SESSION['user_id'])) {
@@ -111,6 +114,7 @@ class LessonsController extends Controller
         exit;
     }
 
+    #[NoReturn]
     public function delete_comment(int $id): void
     {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
@@ -272,6 +276,7 @@ class LessonsController extends Controller
         $this->view('admin/lesson_form', $data);
     }
 
+    #[NoReturn]
     public function delete_lesson(int $id): void
     {
         if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {

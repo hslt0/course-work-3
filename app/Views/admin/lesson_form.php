@@ -20,7 +20,7 @@
 <body class="bg-gray-50 font-sans text-gray-800 antialiased min-h-screen flex flex-col">
 
     <?php 
-        $backUrl = URLROOT . '/admin/manage_course/' . $course_id;
+        $backUrl = URLROOT . '/courses/manage_course/' . $course_id;
         $backText = 'Back to Course Management';
         require APPROOT . '/Views/partials/navbar.php'; 
     ?>
@@ -35,7 +35,7 @@
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <!-- Ensure enctype is multipart/form-data for file uploads -->
-            <form action="<?= isset($lesson_id) && $lesson_id !== null ? URLROOT . '/admin/edit_lesson/' . $lesson_id : URLROOT . '/admin/create_lesson/' . $course_id ?>" method="POST" enctype="multipart/form-data" class="p-8 space-y-6">
+            <form action="<?= isset($lesson_id) && $lesson_id !== null ? URLROOT . '/lessons/edit_lesson/' . $lesson_id : URLROOT . '/lessons/create_lesson/' . $course_id ?>" method="POST" enctype="multipart/form-data" class="p-8 space-y-6">
                 
                 <?php if (!empty($error)): ?>
                     <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
@@ -86,7 +86,7 @@
                 </div>
 
                 <div class="pt-6 border-t border-gray-100 flex justify-end gap-4">
-                    <a href="<?= URLROOT ?>/admin/manage_course/<?= $course_id ?>" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors">Cancel</a>
+                    <a href="<?= URLROOT ?>/courses/manage_course/<?= $course_id ?>" class="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 bg-white hover:bg-gray-50 font-medium transition-colors">Cancel</a>
                     <button type="submit" class="px-8 py-3 border border-transparent rounded-xl text-white bg-green-600 hover:bg-green-700 font-bold shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                         <?= isset($lesson_id) && $lesson_id !== null ? 'Update Lesson' : 'Add Lesson' ?>
                     </button>
