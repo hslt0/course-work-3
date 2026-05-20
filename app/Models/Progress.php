@@ -14,8 +14,8 @@ class Progress
     {
         $db = Database::getInstance();
         
-        // Use INSERT IGNORE or ON CONFLICT so it won't fail if they already completed it
-        $stmt = $db->prepare('INSERT INTO completed_lessons (user_id, lesson_id) VALUES (:user_id, :lesson_id) ON CONFLICT(user_id, lesson_id) DO NOTHING');
+        // Use INSERT IGNORE so it won't fail if they already completed it
+        $stmt = $db->prepare('INSERT IGNORE INTO completed_lessons (user_id, lesson_id) VALUES (:user_id, :lesson_id)');
         return $stmt->execute(['user_id' => $userId, 'lesson_id' => $lessonId]);
     }
 
