@@ -123,3 +123,5 @@ CREATE TABLE test_results (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE
 );
+
+INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `is_banned`, `created_at`) VALUES (NULL, 'admin', 'admin@example.com', '$2y$10$RkBR3G2gkQHruBiqCeD/JujevQdzVhm9pdrCJokMpLDmH2/FKGq0S', 'admin', '0', CURRENT_TIMESTAMP);
