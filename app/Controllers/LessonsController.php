@@ -148,15 +148,16 @@ class LessonsController extends Controller
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
             $data['lesson_title'] = trim($_POST['lesson_title']);
-            $data['type'] = trim($_POST['type']);
             $contentSource = $_POST['content_source'] ?? 'path';
 
             $contentPath = '';
+            $lessonType = '';
 
             if ($contentSource === 'upload') {
-                $uploadedPath = $this->handleFileUpload($_FILES['lesson_file'] ?? null);
-                if ($uploadedPath) {
-                    $contentPath = $uploadedPath;
+                $uploadResult = $this->handleFileUpload($_FILES['lesson_file'] ?? null);
+                if ($uploadResult) {
+                    $contentPath = $uploadResult['path'];
+                    $lessonType = $uploadResult['type'];
                 } else {
                     $data['error'] = 'File upload failed. Make sure the file is a valid format (PDF, MP4, Markdown, PPTX) and within size limits.';
                 }
@@ -164,14 +165,19 @@ class LessonsController extends Controller
                 $contentPath = trim($_POST['content_path'] ?? '');
                 if (empty($contentPath)) {
                     $data['error'] = 'Please provide a content path or URL.';
+                } else {
+                    $lessonType = $this->determineTypeFromUrl($contentPath);
+                    if (!$lessonType) {
+                        $data['error'] = 'Could not determine file type from URL.';
+                    }
                 }
             }
 
             if (empty($data['error'])) {
-                if (empty($data['lesson_title']) || empty($data['type'])) {
+                if (empty($data['lesson_title']) || empty($lessonType)) {
                     $data['error'] = 'Please fill out all required fields.';
                 } else {
-                    if (Lesson::create($courseId, $data['lesson_title'], $data['type'], $contentPath)) {
+                    if (Lesson::create($courseId, $data['lesson_title'], $lessonType, $contentPath)) {
                         header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
                         exit;
                     } else {
@@ -182,6 +188,7 @@ class LessonsController extends Controller
             if (!empty($contentPath)) {
                 $data['content_path'] = $contentPath;
             }
+            $data['type'] = $lessonType;
         }
 
         $this->view('lessons/lesson_form', $data);
@@ -214,35 +221,36 @@ class LessonsController extends Controller
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
             $data['lesson_title'] = trim($_POST['lesson_title']);
-            $data['type'] = trim($_POST['type']);
             $contentSource = $_POST['content_source'] ?? 'path';
 
-            $contentPath = '';
+            $contentPath = $lesson->content_path;
+            $lessonType = $lesson->type;
 
             if ($contentSource === 'upload') {
-                $uploadedPath = $this->handleFileUpload($_FILES['lesson_file'] ?? null, $lesson->content_path);
-                if ($uploadedPath) {
-                    $contentPath = $uploadedPath;
+                $uploadResult = $this->handleFileUpload($_FILES['lesson_file'] ?? null, $lesson->content_path);
+                if ($uploadResult) {
+                    $contentPath = $uploadResult['path'];
+                    $lessonType = $uploadResult['type'];
                 } else {
                     $fileInfo = $_FILES['lesson_file'] ?? null;
                     if ($fileInfo && $fileInfo['error'] !== UPLOAD_ERR_NO_FILE) {
                         $data['error'] = 'File upload failed. Make sure the file is a valid format (PDF, MP4, Markdown, PPTX) and within size limits.';
-                    } else {
-                        $contentPath = $lesson->content_path;
                     }
                 }
             } else {
                 $contentPath = trim($_POST['content_path'] ?? '');
                 if (empty($contentPath)) {
                     $data['error'] = 'Please provide a content path or URL.';
+                } else {
+                    $lessonType = $this->determineTypeFromUrl($contentPath) ?: $lessonType;
                 }
             }
 
             if (empty($data['error'])) {
-                if (empty($data['lesson_title']) || empty($data['type'])) {
+                if (empty($data['lesson_title']) || empty($lessonType)) {
                     $data['error'] = 'Please fill out all required fields.';
                 } else {
-                    if (Lesson::update($id, $data['lesson_title'], $data['type'], $contentPath)) {
+                    if (Lesson::update($id, $data['lesson_title'], $lessonType, $contentPath)) {
                         header('Location: ' . URLROOT . '/courses/manage_course/' . $courseId);
                         exit;
                     } else {
@@ -251,9 +259,8 @@ class LessonsController extends Controller
                 }
             }
 
-            if (empty($data['content_path']) && !empty($contentPath)) {
-                $data['content_path'] = $contentPath;
-            }
+            $data['content_path'] = $contentPath;
+            $data['type'] = $lessonType;
         }
 
         $this->view('lessons/lesson_form', $data);
@@ -277,10 +284,10 @@ class LessonsController extends Controller
         exit;
     }
 
-    private function handleFileUpload(?array $fileInfo, ?string $existingPath = null): ?string
+    private function handleFileUpload(?array $fileInfo, ?string $existingPath = null): ?array
     {
         if (!$fileInfo || $fileInfo['error'] === UPLOAD_ERR_NO_FILE) {
-            return $existingPath;
+            return null;
         }
 
         if ($fileInfo['error'] !== UPLOAD_ERR_OK) {
@@ -291,23 +298,20 @@ class LessonsController extends Controller
         $mimeType = finfo_file($finfo, $fileInfo['tmp_name']);
         finfo_close($finfo);
 
-        $allowedMimeTypes = [
-            'application/pdf',
-            'video/mp4',
-            'text/plain',
-            'text/markdown',
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            'application/vnd.ms-powerpoint'
+        $extension = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
+
+        $mimeToType = [
+            'application/pdf' => 'pdf',
+            'video/mp4' => 'video',
+            'text/plain' => 'markdown',
+            'text/markdown' => 'markdown',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation' => 'pptx',
+            'application/vnd.ms-powerpoint' => 'ppt'
         ];
 
-        if (!in_array($mimeType, $allowedMimeTypes)) {
-            return null;
-        }
+        $lessonType = $mimeToType[$mimeType] ?? null;
 
-        $extension = strtolower(pathinfo($fileInfo['name'], PATHINFO_EXTENSION));
-        $allowedExtensions = ['pdf', 'mp4', 'txt', 'md', 'pptx', 'ppt'];
-
-        if (!in_array($extension, $allowedExtensions)) {
+        if (!$lessonType) {
             return null;
         }
 
@@ -320,9 +324,30 @@ class LessonsController extends Controller
         $destination = $uploadDir . $fileName;
 
         if (move_uploaded_file($fileInfo['tmp_name'], $destination)) {
-            return '/uploads/lessons/' . $fileName;
+            return [
+                'path' => '/uploads/lessons/' . $fileName,
+                'type' => $lessonType
+            ];
         }
 
         return null;
+    }
+
+    private function determineTypeFromUrl(string $url): string
+    {
+        $url = strtolower($url);
+        if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be') || str_ends_with($url, '.mp4')) {
+            return 'video';
+        }
+        if (str_ends_with($url, '.pdf')) {
+            return 'pdf';
+        }
+        if (str_ends_with($url, '.md') || str_ends_with($url, '.txt')) {
+            return 'markdown';
+        }
+        if (str_ends_with($url, '.ppt') || str_ends_with($url, '.pptx')) {
+            return 'pptx';
+        }
+        return '';
     }
 }

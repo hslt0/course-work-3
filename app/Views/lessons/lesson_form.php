@@ -34,7 +34,6 @@
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <!-- Ensure enctype is multipart/form-data for file uploads -->
             <form action="<?= isset($lesson_id) ? URLROOT . '/lessons/edit_lesson/' . $lesson_id : URLROOT . '/lessons/create_lesson/' . $course_id ?>" method="POST" enctype="multipart/form-data" class="p-8 space-y-6">
                 
                 <?php if (!empty($error)): ?>
@@ -48,17 +47,6 @@
                     <input type="text" name="lesson_title" id="lesson_title" required value="<?= htmlspecialchars($lesson_title, ENT_QUOTES, 'UTF-8') ?>" class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-green-500 focus:border-green-500 sm:text-sm">
                 </div>
 
-                <div>
-                    <label for="type" class="block text-sm font-bold text-gray-700 mb-2">Lesson Type *</label>
-                    <select name="type" id="type" required class="block w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-green-500 focus:border-green-500 sm:text-sm bg-white">
-                        <option value="video" <?= $type === 'video' ? 'selected' : '' ?>>Video (MP4, YouTube Embed URL)</option>
-                        <option value="pdf" <?= $type === 'pdf' ? 'selected' : '' ?>>PDF Document</option>
-                        <option value="markdown" <?= $type === 'markdown' ? 'selected' : '' ?>>Markdown Text File</option>
-                        <option value="pptx" <?= $type === 'pptx' ? 'selected' : '' ?>>PowerPoint (Downloadable)</option>
-                    </select>
-                </div>
-
-                <!-- Toggle between File Upload and URL/Path Input -->
                 <div class="border-t border-gray-100 pt-6 mt-6">
                     <p class="text-sm font-bold text-gray-700 mb-4">Content Source *</p>
                     
@@ -95,7 +83,6 @@
         </div>
     </div>
 
-    <!-- Simple JS to toggle inputs based on radio selection -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const radioUpload = document.getElementById('source_upload');
@@ -120,7 +107,6 @@
             radioUpload.addEventListener('change', updateVisibility);
             radioPath.addEventListener('change', updateVisibility);
             
-            // Initial call
             updateVisibility();
         });
     </script>
