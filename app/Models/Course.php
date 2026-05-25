@@ -33,9 +33,6 @@ class Course
         return $course ?: null;
     }
 
-    /**
-     * Gets all courses a specific user is enrolled in.
-     */
     public static function getEnrolledByUser(int $userId): array
     {
         $db = Database::getInstance();
@@ -50,10 +47,6 @@ class Course
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    /**
-     * Search and filter courses with pagination support.
-     * Uses PHP Levenshtein distance to score and sort all results based on closeness to the search query.
-     */
     public static function searchAndFilterPaginated(
         ?string $search, 
         ?string $language, 
@@ -89,18 +82,14 @@ class Course
             $params['difficulty'] = $difficulty;
         }
 
-        // We fetch all matching courses first to do the PHP-side search/sorting
-        // because we can't LIMIT in SQL *before* doing PHP-side sorting.
         $stmt = $db->prepare($query);
         $stmt->execute($params);
         $allCourses = $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
 
-        // Apply PHP-side search filtering and sorting if search term exists
         if (!empty($search)) {
             $searchLower = strtolower(trim($search));
             $searchWords = array_filter(explode(' ', $searchLower));
             
-            // Score the courses
             foreach ($allCourses as $course) {
                 $nameLower = strtolower($course->name);
                 $langLower = strtolower($course->language);
@@ -135,12 +124,10 @@ class Course
                 $course->search_score = $bestScore;
             }
 
-            // Sort by search score
             usort($allCourses, function ($a, $b) {
                 return $a->search_score <=> $b->search_score;
             });
         } else {
-            // Apply normal SQL-style sorting in PHP since we fetched all
             $allowedSorts = [
                 'language_asc' => function($a, $b) { return $a->language <=> $b->language; },
                 'language_desc' => function($a, $b) { return $b->language <=> $a->language; },
@@ -158,11 +145,10 @@ class Course
             if (!empty($sortBy) && isset($allowedSorts[$sortBy])) {
                 usort($allCourses, $allowedSorts[$sortBy]);
             } else {
-                usort($allCourses, function($a, $b) { return $b->id <=> $a->id; }); // Default: id DESC
+                usort($allCourses, function($a, $b) { return $b->id <=> $a->id; });
             }
         }
 
-        // Manually apply Limit and Offset on the sorted array
         $totalFound = count($allCourses);
         $paginatedResults = array_slice($allCourses, $offset, $limit);
 
@@ -172,9 +158,6 @@ class Course
         ];
     }
 
-    /**
-     * Get distinct languages for the filter dropdown.
-     */
     public static function getDistinctLanguages(): array
     {
         $db = Database::getInstance();

@@ -10,12 +10,8 @@ class Answer
     public int $id;
     public int $question_id;
     public string $answer_text;
-    public bool $is_correct; // Use 1 for true, 0 for false in DB
+    public bool $is_correct;
 
-    /**
-     * Fetches all possible answers for a given question ID.
-     * @return self[]
-     */
     public static function getForQuestion(int $questionId): array
     {
         $db = Database::getInstance();

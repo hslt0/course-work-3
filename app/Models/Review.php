@@ -14,12 +14,8 @@ class Review
     public ?string $comment;
     public string $created_at;
     
-    // Virtual properties populated by JOIN
     public string $user_name;
 
-    /**
-     * Get all reviews for a specific course.
-     */
     public static function getForCourse(int $courseId): array
     {
         $db = Database::getInstance();
@@ -34,9 +30,6 @@ class Review
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    /**
-     * Get the average rating for a course.
-     */
     public static function getAverageRatingForCourse(int $courseId): float
     {
         $db = Database::getInstance();
@@ -45,9 +38,6 @@ class Review
         return round($stmt->fetchColumn() ?: 0, 1);
     }
 
-    /**
-     * Check if a specific user has already reviewed a course.
-     */
     public static function hasUserReviewed(int $userId, int $courseId): bool
     {
         $db = Database::getInstance();
@@ -56,9 +46,6 @@ class Review
         return (bool) $stmt->fetchColumn();
     }
 
-    /**
-     * Add a new review.
-     */
     public static function create(int $userId, int $courseId, int $rating, ?string $comment): bool
     {
         $db = Database::getInstance();

@@ -12,13 +12,8 @@ class QuestionController extends Controller
 {
     public function __construct()
     {
-        // Protect all admin routes
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied: You do not have permission to view this page.");
-        }
-
         parent::__construct();
+        $this->requireAdmin();
     }
 
     public function create_question(int $testId): void
@@ -43,11 +38,9 @@ class QuestionController extends Controller
             $data = $this->processQuestionData($data);
 
             if (empty($data['error'])) {
-                // Save question
                 $questionId = Question::create($testId, $data['question_text']);
                 
                 if ($questionId) {
-                    // Save answers
                     $this->extracted($data, $questionId, $testId);
                 } else {
                     $data['error'] = 'Something went wrong saving the question.';
@@ -70,7 +63,6 @@ class QuestionController extends Controller
         
         $answersData = Answer::getForQuestion($id);
         
-        // Prepare data for form
         $answersArray = ['', '', '', ''];
         $correctAnswerIndex = '0';
         
@@ -97,7 +89,6 @@ class QuestionController extends Controller
             $data = $this->processQuestionData($data);
 
             if (empty($data['error'])) {
-                // Update question
                 if (Question::update($id, $data['question_text'])) {
                     Answer::deleteByQuestionId($id);
 
@@ -128,12 +119,6 @@ class QuestionController extends Controller
         exit;
     }
 
-    /**
-     * @param array $data
-     * @param int $id
-     * @param int $testId
-     * @return void
-     */
     #[NoReturn]
     private function extracted(array $data, int $id, int $testId): void
     {
@@ -160,7 +145,6 @@ class QuestionController extends Controller
         ];
         $data['correct_answer'] = $_POST['correct_answer'] ?? '0';
 
-        // Validate
         $validAnswersCount = 0;
         foreach ($data['answers'] as $ans) {
             if (!empty($ans)) $validAnswersCount++;

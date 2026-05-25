@@ -13,7 +13,6 @@ class App
     {
         $url = $this->parseUrl();
 
-        // 1. Controller
         if (!empty($url[0])) {
             $potentialControllerName = ucfirst($url[0]) . 'Controller';
             $controllerPath = __DIR__ . '/../Controllers/' . $potentialControllerName . '.php';
@@ -26,7 +25,6 @@ class App
 
         $this->controller = new $this->controllerName;
 
-        // 2. Method
         if (isset($url[1])) {
             if (method_exists($this->controller, $url[1])) {
                 $this->method = $url[1];
@@ -34,10 +32,8 @@ class App
             }
         }
 
-        // 3. Parameters
         $this->params = $url ? array_values($url) : [];
 
-        // Call the controller method with parameters
         call_user_func_array([$this->controller, $this->method], $this->params);
     }
 

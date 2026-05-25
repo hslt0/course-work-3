@@ -22,9 +22,7 @@ class LessonsController extends Controller
             return;
         }
 
-        // Check if user is logged in and enrolled in the parent course
         if (!isset($_SESSION['user_id']) || !Enrollment::isEnrolled($_SESSION['user_id'], $lesson->course_id)) {
-            // Redirect to course page if not enrolled
             header('Location: ' . URLROOT . '/courses/show/' . $lesson->course_id);
             exit;
         }
@@ -32,11 +30,9 @@ class LessonsController extends Controller
         $course = Course::getById($lesson->course_id);
         $isCompleted = Progress::isLessonCompleted($_SESSION['user_id'], $id);
 
-        // Fetch prev and next lessons for navigation
         $prevLesson = Lesson::getPreviousLesson($lesson->course_id, $lesson->order_index);
         $nextLesson = Lesson::getNextLesson($lesson->course_id, $lesson->order_index);
         
-        // Fetch comments for the discussion section
         $comments = Comment::getForLesson($id);
 
         $data = [
@@ -49,10 +45,8 @@ class LessonsController extends Controller
             'title' => $lesson->title
         ];
 
-        // Choose the view based on the lesson type
         $viewName = 'lessons/' . $lesson->type;
 
-        // For ppt/pptx, we can just offer a download link in a generic view
         if ($lesson->type === 'ppt' || $lesson->type === 'pptx') {
             $viewName = 'lessons/downloadable';
         }
@@ -74,7 +68,6 @@ class LessonsController extends Controller
                 Progress::markLessonComplete($_SESSION['user_id'], $id);
             }
             
-            // Redirect to next lesson if it exists, otherwise back to course
             $nextLesson = Lesson::getNextLesson($lesson->course_id, $lesson->order_index);
             if ($nextLesson) {
                 header('Location: ' . URLROOT . '/lessons/show/' . $nextLesson->id);
@@ -103,7 +96,6 @@ class LessonsController extends Controller
             
             if (!empty($commentText)) {
                 $lesson = Lesson::getById($id);
-                // Ensure they are enrolled before allowing comments
                 if ($lesson && Enrollment::isEnrolled($_SESSION['user_id'], $lesson->course_id)) {
                     Comment::create($_SESSION['user_id'], $id, $commentText);
                 }
@@ -117,10 +109,7 @@ class LessonsController extends Controller
     #[NoReturn]
     public function delete_comment(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $lessonId = $_POST['lesson_id'] ?? null;
@@ -137,10 +126,7 @@ class LessonsController extends Controller
 
     public function create_lesson(int $courseId): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $course = Course::getById($courseId);
         if (!$course) {
@@ -203,10 +189,7 @@ class LessonsController extends Controller
 
     public function edit_lesson(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $lesson = Lesson::getById($id);
 
@@ -279,10 +262,7 @@ class LessonsController extends Controller
     #[NoReturn]
     public function delete_lesson(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $lesson = Lesson::getById($id);

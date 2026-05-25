@@ -9,13 +9,8 @@ class AdminController extends Controller
 {
     public function __construct()
     {
-        // Protect all admin routes
-        if (!isset($_SESSION['user_id']) || !isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied: You do not have permission to view this page.");
-        }
-
         parent::__construct();
+        $this->requireAdmin();
     }
 
     public function dashboard(): void

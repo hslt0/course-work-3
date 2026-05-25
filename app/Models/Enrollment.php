@@ -21,7 +21,6 @@ class Enrollment
 
     public static function enroll(int $userId, int $courseId): bool
     {
-        // Don't enroll if already enrolled
         if (self::isEnrolled($userId, $courseId)) {
             return true;
         }

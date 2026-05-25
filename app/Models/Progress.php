@@ -7,21 +7,14 @@ use PDO;
 
 class Progress
 {
-    /**
-     * Mark a lesson as completed for a user.
-     */
     public static function markLessonComplete(int $userId, int $lessonId): bool
     {
         $db = Database::getInstance();
         
-        // Use INSERT IGNORE so it won't fail if they already completed it
         $stmt = $db->prepare('INSERT IGNORE INTO completed_lessons (user_id, lesson_id) VALUES (:user_id, :lesson_id)');
         return $stmt->execute(['user_id' => $userId, 'lesson_id' => $lessonId]);
     }
 
-    /**
-     * Check if a specific lesson is completed by a user.
-     */
     public static function isLessonCompleted(int $userId, int $lessonId): bool
     {
         $db = Database::getInstance();
@@ -30,9 +23,6 @@ class Progress
         return (bool)$stmt->fetchColumn();
     }
 
-    /**
-     * Get an array of completed lesson IDs for a specific user and course.
-     */
     public static function getCompletedLessonIdsForCourse(int $userId, int $courseId): array
     {
         $db = Database::getInstance();
@@ -46,9 +36,6 @@ class Progress
         return $stmt->fetchAll(PDO::FETCH_COLUMN);
     }
 
-    /**
-     * Save a test result.
-     */
     public static function saveTestResult(int $userId, int $testId, int $score, int $total): bool
     {
         $db = Database::getInstance();
@@ -61,9 +48,6 @@ class Progress
         ]);
     }
 
-    /**
-     * Get all test results for a user.
-     */
     public static function getUserTestResults(int $userId): array
     {
         $db = Database::getInstance();

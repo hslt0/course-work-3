@@ -22,15 +22,13 @@ class CoursesController extends Controller
         $page = (int)($_GET['page'] ?? 1);
         $itemsPerPage = 6;
         
-        // Only consider the enrollment filter if the user is logged in
         $enrolledFilter = '';
         if (isset($_SESSION['user_id']) && isset($_GET['enrolled'])) {
-            $enrolledFilter = $_GET['enrolled']; // e.g. 'yes' or 'no'
+            $enrolledFilter = $_GET['enrolled'];
         }
         
         $userId = $_SESSION['user_id'] ?? null;
 
-        // Calculate offset (rough estimate before initialization, Paginator handles bounds)
         $offset = max(0, ($page - 1) * $itemsPerPage);
 
         $result = Course::searchAndFilterPaginated(
@@ -104,7 +102,6 @@ class CoursesController extends Controller
     public function enroll(int $id): void
     {
         if (!isset($_SESSION['user_id'])) {
-            // Must be logged in to enroll
             header('Location: ' . URLROOT . '/auth/login');
             exit;
         }
@@ -132,7 +129,6 @@ class CoursesController extends Controller
             Enrollment::unenroll($_SESSION['user_id'], $id);
         }
 
-        // Redirect back to the course or to their dashboard
         header('Location: ' . URLROOT . '/courses/show/' . $id);
         exit;
     }
@@ -151,9 +147,7 @@ class CoursesController extends Controller
             $rating = (int)($_POST['rating'] ?? 0);
             $comment = trim($_POST['comment'] ?? '');
 
-            // Basic validation
             if ($rating >= 1 && $rating <= 5) {
-                // Must be enrolled to review, and can only review once
                 if (Enrollment::isEnrolled($_SESSION['user_id'], $id) && !Review::hasUserReviewed($_SESSION['user_id'], $id)) {
                     Review::create($_SESSION['user_id'], $id, $rating, empty($comment) ? null : $comment);
                 }
@@ -166,10 +160,7 @@ class CoursesController extends Controller
 
     public function create_course(): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $data = [
             'title' => 'Create Course',
@@ -201,10 +192,7 @@ class CoursesController extends Controller
 
     public function edit_course(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $course = Course::getById($id);
 
@@ -245,10 +233,7 @@ class CoursesController extends Controller
     #[NoReturn]
     public function delete_course(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             Course::delete($id);
@@ -259,10 +244,7 @@ class CoursesController extends Controller
 
     public function manage_course(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $course = Course::getById($id);
 

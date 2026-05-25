@@ -11,12 +11,9 @@ class Lesson
     public int $course_id;
     public int $order_index;
     public string $title;
-    public string $type; // 'pdf', 'video', 'pptx', 'markdown'
+    public string $type;
     public string $content_path;
 
-    /**
-     * Fetches all lessons for a given course ID, ordered by their order_index.
-     */
     public static function getForCourse(int $courseId): array
     {
         $db = Database::getInstance();
@@ -26,9 +23,6 @@ class Lesson
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    /**
-     * Fetches a single lesson by its ID.
-     */
     public static function getById(int $id): ?self
     {
         $db = Database::getInstance();
@@ -39,9 +33,6 @@ class Lesson
         return $lesson ?: null;
     }
 
-    /**
-     * Gets the previous lesson in the course, if one exists.
-     */
     public static function getPreviousLesson(int $courseId, int $currentOrderIndex): ?self
     {
         $db = Database::getInstance();
@@ -51,9 +42,6 @@ class Lesson
         return $lesson ?: null;
     }
 
-    /**
-     * Gets the next lesson in the course, if one exists.
-     */
     public static function getNextLesson(int $courseId, int $currentOrderIndex): ?self
     {
         $db = Database::getInstance();
@@ -67,7 +55,6 @@ class Lesson
     {
         $db = Database::getInstance();
         
-        // Find the highest current order_index to append this to the end
         $orderStmt = $db->prepare('SELECT MAX(order_index) FROM lessons WHERE course_id = :course_id');
         $orderStmt->execute(['course_id' => $courseId]);
         $maxOrder = (int)$orderStmt->fetchColumn();

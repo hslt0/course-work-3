@@ -13,12 +13,8 @@ class Comment
     public string $comment_text;
     public string $created_at;
     
-    // Virtual property populated by JOIN
     public string $user_name;
 
-    /**
-     * Get all comments for a specific lesson, oldest first.
-     */
     public static function getForLesson(int $lessonId): array
     {
         $db = Database::getInstance();
@@ -33,9 +29,6 @@ class Comment
         return $stmt->fetchAll(PDO::FETCH_CLASS, self::class);
     }
 
-    /**
-     * Add a new comment to a lesson.
-     */
     public static function create(int $userId, int $lessonId, string $commentText): bool
     {
         $db = Database::getInstance();
@@ -50,9 +43,6 @@ class Comment
         ]);
     }
     
-    /**
-     * Delete a comment (usually only allowed by admin or the comment owner)
-     */
     public static function delete(int $id): bool
     {
          $db = Database::getInstance();

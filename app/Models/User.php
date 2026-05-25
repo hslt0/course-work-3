@@ -54,7 +54,6 @@ class User
     public static function login(string $email, string $password): ?self
     {
         $user = self::findByEmail($email);
-        // Do not allow banned users to login
         if ($user && !$user->is_banned && password_verify($password, $user->password)) {
             return $user;
         }

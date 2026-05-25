@@ -12,13 +12,11 @@ class AuthController extends Controller
 {
     public function __construct()
     {
-        // Call parent constructor to ensure global rate limit is applied
         parent::__construct();
     }
 
     public function login(): void
     {
-        // If already logged in, redirect to home
         if (isset($_SESSION['user_id'])) {
             header('Location: ' . URLROOT);
             exit;
@@ -33,7 +31,6 @@ class AuthController extends Controller
         ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Enforce Specific Login Rate Limiting (5 attempts per 15 minutes)
             if (RateLimiter::check('login_attempt')) {
                 $data['email_err'] = 'Too many login attempts. Please wait 15 minutes and try again.';
                 $this->view('auth/login', $data);
@@ -59,12 +56,10 @@ class AuthController extends Controller
                 $user = User::login($data['email'], $data['password']);
 
                 if ($user) {
-                    // Create session
                     $_SESSION['user_id'] = $user->id;
                     $_SESSION['user_name'] = $user->name;
-                    $_SESSION['user_role'] = $user->role; // Store role in session
+                    $_SESSION['user_role'] = $user->role;
                     
-                    // Redirect admin to dashboard, student to home
                     if ($user->isAdmin()) {
                         header('Location: ' . URLROOT . '/admin/dashboard');
                     } else {
@@ -72,7 +67,6 @@ class AuthController extends Controller
                     }
                     exit;
                 } else {
-                    // This is a failed attempt, so we record it.
                     RateLimiter::attempt('login_attempt');
                     $data['password_err'] = 'Password incorrect or email not found';
                 }
@@ -84,7 +78,6 @@ class AuthController extends Controller
 
     public function register(): void
     {
-        // If already logged in, redirect to home
         if (isset($_SESSION['user_id'])) {
             header('Location: ' . URLROOT);
             exit;
@@ -112,12 +105,10 @@ class AuthController extends Controller
             $data['password'] = trim($_POST['password']);
             $data['confirm_password'] = trim($_POST['confirm_password']);
 
-            // Validate Name
             if (empty($data['name'])) {
                 $data['name_err'] = 'Please enter name';
             }
 
-            // Validate Email
             if (empty($data['email'])) {
                 $data['email_err'] = 'Please enter email';
             } else {
@@ -126,14 +117,12 @@ class AuthController extends Controller
                 }
             }
 
-            // Validate Password
             if (empty($data['password'])) {
                 $data['password_err'] = 'Please enter password';
             } elseif (strlen($data['password']) < 6) {
                 $data['password_err'] = 'Password must be at least 6 characters';
             }
 
-            // Validate Confirm Password
             if (empty($data['confirm_password'])) {
                 $data['confirm_password_err'] = 'Please confirm password';
             } else {

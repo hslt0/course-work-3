@@ -20,10 +20,6 @@ class Question
         return $question ?: null;
     }
 
-    /**
-     * Fetches all questions for a given test ID.
-     * @return self[]
-     */
     public static function getForTest(int $testId): array
     {
         $db = Database::getInstance();

@@ -15,9 +15,6 @@ use JetBrains\PhpStorm\NoReturn;
 
 class TestsController extends Controller
 {
-    /**
-     * Display the test for the user to take.
-     */
     public function show(int $id): void
     {
         $test = Test::getById($id);
@@ -28,9 +25,7 @@ class TestsController extends Controller
             return;
         }
 
-        // Check if user is logged in and enrolled in the parent course
         if (!isset($_SESSION['user_id']) || !Enrollment::isEnrolled($_SESSION['user_id'], $test->course_id)) {
-            // Redirect to course page if not enrolled
             header('Location: ' . URLROOT . '/courses/show/' . $test->course_id);
             exit;
         }
@@ -38,7 +33,6 @@ class TestsController extends Controller
         $course = Course::getById($test->course_id);
         $questions = Question::getForTest($id);
         
-        // Prepare questions with their respective answers
         $questionsWithAnswers = [];
         foreach ($questions as $question) {
             $questionsWithAnswers[] = [
@@ -55,9 +49,6 @@ class TestsController extends Controller
         ]);
     }
 
-    /**
-     * Process the submitted test.
-     */
     public function submit(int $id): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -68,7 +59,6 @@ class TestsController extends Controller
         $userId = $_SESSION['user_id'] ?? null;
         $actionKey = 'submit_test_' . ($userId ?? 'guest');
 
-        // Enforce Rate Limiting before anything else
         if (RateLimiter::check($actionKey, 10, 3600)) {
             http_response_code(429);
             die('Too many submissions. Please wait a while before trying again.');
@@ -83,13 +73,11 @@ class TestsController extends Controller
             return;
         }
 
-        // Security check: Must be enrolled to submit
         if (!$userId || !Enrollment::isEnrolled($userId, $test->course_id)) {
             header('Location: ' . URLROOT . '/courses/show/' . $test->course_id);
             exit;
         }
 
-        // Record the attempt *before* processing
         RateLimiter::attempt($actionKey, 10, 3600);
 
         $course = Course::getById($test->course_id);
@@ -126,7 +114,6 @@ class TestsController extends Controller
             ];
         }
 
-        // Save the test result to the database
         Progress::saveTestResult($userId, $id, $score, $totalQuestions);
 
         $this->view('tests/results', [
@@ -141,10 +128,7 @@ class TestsController extends Controller
 
     public function manage_test(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $test = Test::getById($id);
         if (!$test) {
@@ -173,10 +157,7 @@ class TestsController extends Controller
 
     public function create_test(int $courseId): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         $course = Course::getById($courseId);
         if (!$course) {
@@ -214,10 +195,7 @@ class TestsController extends Controller
     #[NoReturn]
     public function delete_test(int $id): void
     {
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            die("Access Denied");
-        }
+        $this->requireAdmin();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $test = Test::getById($id);
