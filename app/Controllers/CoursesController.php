@@ -47,9 +47,14 @@ class CoursesController extends Controller
 
         $paginator = new Paginator($totalItems, $itemsPerPage, $page);
         
+        // Remove the 'url' parameter so it doesn't get included in the pagination links
+        $queryParams = $_GET;
+        unset($queryParams['url']);
+
         return [
             'courses' => $courses,
             'paginator' => $paginator,
+            'queryParams' => $queryParams,
             'filters' => [
                 'search' => $search,
                 'language' => $language,
@@ -74,7 +79,7 @@ class CoursesController extends Controller
         $data = $this->getFilteredCourseData();
 
         $coursesHtml = $this->view('courses/_courses_list', ['courses' => $data['courses']], true);
-        $paginationHtml = $data['paginator']->getLinks(URLROOT . '/courses', $_GET);
+        $paginationHtml = $data['paginator']->getLinks(URLROOT . '/courses', $data['queryParams']);
 
         header('Content-Type: application/json');
         echo json_encode([

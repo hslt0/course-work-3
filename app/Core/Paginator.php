@@ -49,6 +49,8 @@ class Paginator
             return '';
         }
 
+        unset($queryParams['url']);
+
         $html = '<nav class="flex items-center justify-between" aria-label="Pagination">';
         
         $prevDisabled = !$this->hasPrevious() ? 'opacity-50 pointer-events-none' : '';
