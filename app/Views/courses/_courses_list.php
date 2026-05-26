@@ -14,10 +14,9 @@
         <a href="<?= URLROOT ?>" class="mt-6 inline-block bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 hover:text-gray-900 font-bold py-2 px-6 rounded-lg transition-colors">Clear all filters</a>
     </div>
 <?php else: ?>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
         <?php foreach ($courses as $course): ?>
-            
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+            <a href="<?= URLROOT ?>/courses/show/<?= $course->id ?>" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
                 
                 <div class="h-48 bg-gray-100 w-full relative overflow-hidden">
                     <?php if (!empty($course->preview_image)): ?>
@@ -50,18 +49,11 @@
                     <h2 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors duration-200 line-clamp-2">
                         <?= htmlspecialchars($course->name, ENT_QUOTES, 'UTF-8') ?>
                     </h2>
-                    <p class="text-sm text-gray-600 flex-1 leading-relaxed mb-6 line-clamp-3">
+                    <p class="text-sm text-gray-600 flex-1 leading-relaxed line-clamp-3">
                         <?= htmlspecialchars($course->description, ENT_QUOTES, 'UTF-8') ?>
                     </p>
-                    
-                    <div class="mt-auto pt-4 border-t border-gray-100">
-                        <a href="<?= URLROOT ?>/courses/show/<?= $course->id ?>" class="block w-full text-center bg-gray-50 hover:bg-green-500 text-gray-800 hover:text-white font-semibold py-2.5 px-4 rounded-xl transition-all duration-200 border border-gray-200 hover:border-transparent text-sm">
-                            View Details
-                        </a>
-                    </div>
                 </div>
-            </div>
-
+            </a>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
