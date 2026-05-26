@@ -13,7 +13,7 @@ use JetBrains\PhpStorm\NoReturn;
 
 class CoursesController extends Controller
 {
-    public function index(): void
+    private function getFilteredCourseData(): array
     {
         $search = $_GET['search'] ?? '';
         $language = $_GET['language'] ?? '';
@@ -47,20 +47,39 @@ class CoursesController extends Controller
 
         $paginator = new Paginator($totalItems, $itemsPerPage, $page);
         
-        $languages = Course::getDistinctLanguages();
-
-        $this->view('courses/index', [
+        return [
             'courses' => $courses,
             'paginator' => $paginator,
-            'languages' => $languages,
             'filters' => [
                 'search' => $search,
                 'language' => $language,
                 'difficulty' => $difficulty,
                 'sort' => $sortBy,
                 'enrolled' => $enrolledFilter
-            ],
-            'title' => 'Our Courses'
+            ]
+        ];
+    }
+
+    public function index(): void
+    {
+        $data = $this->getFilteredCourseData();
+        $data['languages'] = Course::getDistinctLanguages();
+        $data['title'] = 'Our Courses';
+
+        $this->view('courses/index', $data);
+    }
+
+    public function filter(): void
+    {
+        $data = $this->getFilteredCourseData();
+
+        $coursesHtml = $this->view('courses/_courses_list', ['courses' => $data['courses']], true);
+        $paginationHtml = $data['paginator']->getLinks(URLROOT . '/courses', $_GET);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'courses' => $coursesHtml,
+            'pagination' => $paginationHtml
         ]);
     }
 
