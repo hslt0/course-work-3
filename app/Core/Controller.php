@@ -21,14 +21,26 @@ abstract class Controller
         }
     }
 
-    protected function view(string $view, array $data = []): void
+    /**
+     * Render a view, optionally returning the output as a string instead of echoing it.
+     */
+    protected function view(string $view, array $data = [], bool $return = false): ?string
     {
         extract($data);
 
         $viewPath = __DIR__ . '/../Views/' . $view . '.php';
         
         if (file_exists($viewPath)) {
+            ob_start();
             require_once $viewPath;
+            $content = ob_get_clean();
+            
+            if ($return) {
+                return $content;
+            }
+            
+            echo $content;
+            return null;
         } else {
             die("View does not exist.");
         }
